@@ -1,6 +1,6 @@
 import matplotlib
 
-matplotlib.use("agg")
+# matplotlib.use("agg")
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,6 +11,23 @@ from pySDC.implementations.problem_classes.HarmonicOscillator import harmonic_os
 from pySDC.implementations.sweeper_classes.boris_2nd_order import boris_2nd_order
 from pySDC.implementations.collocation_classes.gauss_legendre import CollGaussLegendre
 from pySDC.core.Step import step
+
+import matplotlib.pyplot as _plt
+
+# _plt.rc('font', size=12)
+# _plt.rcParams['lines.linewidth'] = 2
+# _plt.rcParams['axes.titlesize'] = 18
+# _plt.rcParams['axes.labelsize'] = 16
+# _plt.rcParams['xtick.labelsize'] = 16
+# _plt.rcParams['ytick.labelsize'] = 16
+# _plt.rcParams['xtick.major.pad'] = 5
+# _plt.rcParams['ytick.major.pad'] = 5
+# _plt.rcParams['axes.labelpad'] = 6
+# _plt.rcParams['markers.fillstyle'] = 'none'
+# _plt.rcParams['lines.markersize'] = 7.0
+# _plt.rcParams['lines.markeredgewidth'] = 1.5
+_plt.rcParams['mathtext.fontset'] = 'cm'
+_plt.rcParams['mathtext.rm'] = 'serif'
 
 
 def compute_stability():
@@ -34,7 +51,7 @@ def compute_stability():
     N_k = 400
     N_mu = 400
 
-    k_max = 20.0
+    k_max = 15.0
     mu_max = 20.0
     lambda_k = np.linspace(0.0, k_max, N_k)
     lambda_mu = np.linspace(0.0, mu_max, N_mu)
@@ -160,7 +177,7 @@ def compute_stability():
     )
 
 
-def plot_stability(lambda_k, lambda_mu, num_nodes, K, stab, title):
+def plot_stability(lambda_k, lambda_mu, num_nodes, K, STAB, Title):
     """
     Plotting runtine for moduli
 
@@ -179,31 +196,37 @@ def plot_stability(lambda_k, lambda_mu, num_nodes, K, stab, title):
     fs = 12
 
     levels = np.array([0.25, 0.5, 0.75, 0.9, 1.0, 1.1])
+    fig, ax=plt.subplots(1,2)
+    for i in range(2):
+        title=Title[i]
+        stab=STAB[i]
 
-    CS1 = plt.contour(
-        lambda_k, lambda_mu, np.absolute(stab.T), levels, linestyles="dashed"
-    )
-    CS2 = plt.contour(lambda_k, lambda_mu, np.absolute(stab.T), [1.0])
-
-    plt.clabel(CS1, inline=True, fmt="%3.2f", fontsize=fs - 2)
-    manual_locations = [(1.5, 2.5)]
-    if K > 0:  # for K=0 and no 1.0 isoline, this crashes Matplotlib for somer reason
-        plt.clabel(
-            CS2, inline=True, fmt="%3.2f", fontsize=fs - 2, manual=manual_locations
+        CS1 = ax[i].contour(
+            lambda_k, lambda_mu, np.absolute(stab.T), levels, linestyles="dashed"
         )
+        CS2 = ax[i].contour(lambda_k, lambda_mu, np.absolute(stab.T), [1.0])
 
-    plt.gca().set_xticks(np.arange(0, int(lam_k_max) + 1))
-    plt.gca().set_yticks(np.arange(0, int(lam_mu_max) + 2, 2))
-    plt.gca().tick_params(axis="both", which="both", labelsize=fs)
-    plt.xlim([0.0, lam_k_max])
-    plt.ylim([0.0, lam_mu_max])
-    plt.xlabel(
-        r"$\Delta t\cdot \kappa \ (Spring \ pendulum)$", fontsize=fs, labelpad=0.0
-    )
-    plt.ylabel(r"$\Delta t\cdot \mu \ (Friction)$", fontsize=fs, labelpad=0.0)
-    plt.title("{}  M={} K={}".format(title, num_nodes, K), fontsize=fs)
-    # filename = "stability-K" + str(K) + "-M" + str(num_nodes) + title + ".png"
-    # fig.savefig(filename, bbox_inches="tight")
+        ax[i].clabel(CS1, inline=True, fmt="%3.2f", fontsize=fs - 2)
+        manual_locations = [(1.5, 2.5)]
+        if K > 0:  # for K=0 and no 1.0 isoline, this crashes Matplotlib for somer reason
+            plt.clabel(
+                CS2, inline=True, fmt="%3.2f", fontsize=fs - 2, manual=manual_locations
+            )
+
+        # plt.gca().set_xticks(np.arange(0, int(lam_k_max) + 1))
+        # plt.gca().set_yticks(np.arange(0, int(lam_mu_max) + 2, 2))
+        # plt.gca().tick_params(axis="both", which="both", labelsize=fs)
+        # ax[i].xlim([0.0, lam_k_max])
+        # ax[i].ylim([0.0, lam_mu_max])
+        ax[i].set_xlabel(
+            r"$\Delta t\cdot \kappa \ (Spring \ pendulum)$", fontsize=fs, labelpad=0.0
+        )
+        ax[i].set_ylabel(r"$\Delta t\cdot \mu \ (Friction)$", fontsize=fs, labelpad=0.0)
+        ax[i].set_title("M={}{}".format( num_nodes, title), fontsize=fs)
+        plt.tight_layout()
+        filename = "stability-K" + str(K) + "-M" + str(num_nodes)  + ".pdf"
+        fig.savefig(filename)
+        plt.show()
 
 
 def plot_K_sdc(lambda_k, lambda_mu, num_nodes, K, stab, title):
@@ -225,7 +248,6 @@ def plot_K_sdc(lambda_k, lambda_mu, num_nodes, K, stab, title):
     fs = 12
 
     levels = np.array([0.25, 0.5, 0.75, 0.9, 1.0, 1.1])
-
     CS1 = plt.contour(
         lambda_k, lambda_mu, np.absolute(stab.T), levels, linestyles="dashed"
     )
@@ -250,7 +272,7 @@ def plot_K_sdc(lambda_k, lambda_mu, num_nodes, K, stab, title):
     plt.title("{}  M={}".format(title, num_nodes), fontsize=fs)
     # filename = "stability-K" + str(K) + "-M" + str(num_nodes) + title + ".png"
     # fig.savefig(filename, bbox_inches="tight")
-
+    plt.show()
 
 def main():
     (
@@ -263,13 +285,15 @@ def main():
         stab_picard,
         KPstab,
     ) = compute_stability()
+    STAB=[stab, Kstab]
+    Title=[', K={}'.format(K), '']
 
-    plot_stability(lambda_k, lambda_mu, num_nodes, K, stab, "SDC stability")
-    plot_K_sdc(lambda_k, lambda_mu, num_nodes, K, Kstab, r"$K_{sdc}$ matrix eigenvalue")
-    plot_stability(lambda_k, lambda_mu, num_nodes, K, stab_picard, "Picard stability")
-    plot_K_sdc(
-        lambda_k, lambda_mu, num_nodes, K, KPstab, "Picard iteration matrix eigenvalue"
-    )
+    plot_stability(lambda_k, lambda_mu, num_nodes, K, STAB, Title)
+    # plot_K_sdc(lambda_k, lambda_mu, num_nodes, K, Kstab, r"$K_{sdc}$ matrix eigenvalue")
+    # plot_stability(lambda_k, lambda_mu, num_nodes, K, stab_picard, "Picard stability")
+    # plot_K_sdc(
+        # lambda_k, lambda_mu, num_nodes, K, KPstab, "Picard iteration matrix eigenvalue"
+    # )
 
 
 if __name__ == "__main__":

@@ -8,10 +8,13 @@ import numpy as np
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
 from pySDC.implementations.collocation_classes.gauss_legendre import CollGaussLegendre
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
-from pySDC.implementations.problem_classes.PenningTrap_3D import penningtrap
+from pySDC.implementations.problem_classes.PenningTrap_3D import penningtrap, INFOS
 from pySDC.implementations.sweeper_classes.boris_2nd_order import boris_2nd_order
 from pySDC.playgrounds.Boris.penningtrap_HookClass import convergence_data
 
+
+
+import pdb
 
 def error_calculator(u_ex, u):
     return np.linalg.norm(u_ex - u, np.inf, 0) / np.linalg.norm(u_ex, np.inf, 0)
@@ -46,10 +49,11 @@ def compute_covnergence_data(cwd=""):
     # This comes as read-in for the sweeper params
     sweeper_params = dict()
     sweeper_params["collocation_class"] = CollGaussLegendre
-    sweeper_params["num_nodes"] = 3
+    sweeper_params["num_nodes"] = 4
     sweeper_params["do_coll_update"] = True
-    sweeper_params["initial_guess"] = "random"
-
+    sweeper_params["initial_guess"] = "spread"
+    # sweeper_params['QI'] = 'PIC'
+    # sweeper_params['QE'] = 'PIC'
     # initialize controller parameters
     controller_params = dict()
     controller_params["logger_level"] = 30
@@ -98,10 +102,10 @@ def compute_covnergence_data(cwd=""):
             # get initial values on finest level
             P = controller.MS[0].levels[0].prob
             uinit = P.u_exact(t0)
-
+            INFOS["numeval_f"]=0
             # call main function to get things done ...
             uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
-
+            print(INFOS[  "numeval_f"])
             # extract values from stats
             extract_stats = filter_stats(stats, type="error")
             sortedlist_stats = sort_stats(extract_stats, sortby="time")
@@ -144,44 +148,49 @@ def plot_convergence(cwd=""):
     omega_B = 25.0
     num_nodes = 4
     plot = "position"
-    axis = 1
-    order = np.min([Kiter, np.ones(len(Kiter)) * 2 * num_nodes], 0)
+    axis_iter = [1, 2]
+
 
     time = np.load("data/time.npy")
     error = np.load("data/conv-data.npy", allow_pickle=True).item()
+    order_iter=[2,1]
+    color = ["r", "blue", "g", "brown"]
+    shape = ["o", "d", "s", "x"]
+    fig, ax1=plt.subplots(1,2)
+    for kk, ax in enumerate(axis_iter):
+        axis=ax
+        order = np.min([ax*Kiter+order_iter[kk], np.ones(len(Kiter)) * 2 * num_nodes], 0)
+        for ii, jj in enumerate(Kiter):
+            ax1[ax-1].loglog(
+                time * omega_B,
+                error[jj][plot][axis, :],
+                color=color[ii],
+                marker=shape[ii],
+                ls="",
+                ms=fs,
+                label="k={}".format(jj),
+            )
+            ax1[ax-1].loglog(
+                time * omega_B,
+                error[jj][plot][axis, 0] * (time / time[0]) ** (order[ii]),
+                color="black",
+            )
+            ax1[ax-1].text(
+                time[1] * omega_B,
+                0.3 * error[jj][plot][axis, 0] * (time[1] / time[0]) ** (order[ii]),
+                r"$\mathcal{O}(\Delta t^{%d})$" % (order[ii]),
+                size=2 * fs,
+            )
+            ax1[ax-1].set_title(f"$x_{axis+1}$ coordinate, M={num_nodes}")
+            ax1[ax-1].set_xlabel(r"$\omega_{B}\cdot \Delta t$")
+            ax1[ax-1].set_ylabel("Relative error")
+            ax1[ax-1].legend(loc="lower right")
+            plt.tight_layout()
 
-    color = ["r", "blue", "g"]
-    shape = ["o", "d", "s"]
-
-    for ii, jj in enumerate(Kiter):
-        plt.loglog(
-            time * omega_B,
-            error[jj][plot][axis, :],
-            color=color[ii],
-            marker=shape[ii],
-            ls="",
-            ms=fs,
-            label="k={}".format(jj),
-        )
-        plt.loglog(
-            time * omega_B,
-            error[jj][plot][axis, 0] * (time / time[0]) ** (order[ii]),
-            color="black",
-        )
-        plt.text(
-            time[1] * omega_B,
-            0.3 * error[jj][plot][axis, 0] * (time[1] / time[0]) ** (order[ii]),
-            r"$\mathcal{O}(\Delta t^{%d})$" % (order[ii]),
-            size=2 * fs,
-        )
-    plt.grid(True)
     # title for the plot
-    plt.title(f"$x_{axis+1}$ coordinate, M={num_nodes}")
-    plt.xlabel(r"$\omega_{B}\cdot \Delta t$")
-    plt.ylabel("Relative error")
-    plt.legend(loc="best")
-    plt.tight_layout()
-    plt.savefig("conv_{}_M={}.png".format(axis, num_nodes))
+
+
+    plt.savefig("conv_spread_legendre_{}_M={}.pdf".format(axis, num_nodes))
     plt.show()
 
 
