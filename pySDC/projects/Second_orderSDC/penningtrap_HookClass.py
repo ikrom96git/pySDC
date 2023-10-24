@@ -36,6 +36,8 @@ class particles_output(hooks):
         L.sweep.compute_end_point()
         part = L.uend
         N = L.prob.nparts
+        import pdb
+        pdb.set_trace()
 
         # =============================================================================
         #

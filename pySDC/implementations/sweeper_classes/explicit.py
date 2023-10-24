@@ -39,7 +39,7 @@ class explicit(sweeper):
         P = L.prob
 
         me = []
-
+        print(L.u)
         # integrate RHS over all collocation nodes
         for m in range(1, self.coll.num_nodes + 1):
             # new instance of dtype_u, initialize values with 0
@@ -72,12 +72,14 @@ class explicit(sweeper):
 
         # get QF(u^k)
         integral = self.integrate()
+        print('integral')
         for m in range(M):
             # subtract QEFE(u^k)_m
             for j in range(1, M + 1):
                 integral[m] -= L.dt * self.QE[m + 1, j] * L.f[j]
             # add initial value
             integral[m] += L.u[0]
+
             # add tau if associated
             if L.tau[m] is not None:
                 integral[m] += L.tau[m]

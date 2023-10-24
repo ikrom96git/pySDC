@@ -6,9 +6,10 @@ from pySDC.helpers.stats_helper import get_sorted
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.implementations.problem_classes.PenningTrap_3D import penningtrap
 from pySDC.implementations.sweeper_classes.boris_2nd_order import boris_2nd_order
-from pySDC.playgrounds.Boris.penningtrap_HookClass import particles_output
-
-
+# from pySDC.playgrounds.Boris.penningtrap_HookClass import particles_output
+from pySDC.projects.Second_orderSDC.penningtrap_HookClass import particles_output
+from pySDC.tutorial.step_4.PenningTrap_3D_coarse import penningtrap_coarse
+from pySDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles
 def main():
     """
     Particle cloud in a penning trap, incl. live visualization
@@ -16,26 +17,26 @@ def main():
     """
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-08
-    level_params['dt'] = 0.015625
+    level_params['restol'] = 1e-16
+    level_params['dt'] = 0.0015625
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'LOBATTO'
-    sweeper_params['num_nodes'] = 3
+    sweeper_params['quad_type'] = 'GAUSS'
+    sweeper_params['num_nodes'] = [5, 5]
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
-    problem_params['omega_E'] = 4.9
-    problem_params['omega_B'] = 25.0
-    problem_params['u0'] = np.array([[10, 0, 0], [100, 0, 100], [1], [1]], dtype=object)
-    problem_params['nparts'] = 10
+    problem_params['omega_E'] = 1
+    problem_params['omega_B'] = 1/0.1
+    problem_params['u0'] = np.array([[1, 1, 1], [1, 1, 1], [1], [1]], dtype=object)
+    problem_params['nparts'] = 1
     problem_params['sig'] = 0.1
-    # problem_params['Tend'] = 16.0
+
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 20
+    step_params['maxiter'] = 5
 
     # initialize controller parameters
     controller_params = dict()
@@ -49,7 +50,7 @@ def main():
     description['sweeper_class'] = boris_2nd_order
     description['sweeper_params'] = sweeper_params
     description['level_params'] = level_params
-    # description['space_transfer_class'] = particles_to_particles # this is only needed for more than 2 levels
+    description['space_transfer_class'] = particles_to_particles # this is only needed for more than 2 levels
     description['step_params'] = step_params
 
     # instantiate the controller (no controller parameters used here)
@@ -57,7 +58,7 @@ def main():
 
     # set time parameters
     t0 = 0.0
-    Tend = 128 * 0.015625
+    Tend = 1.0
 
     # get initial values on finest level
     P = controller.MS[0].levels[0].prob
@@ -66,17 +67,18 @@ def main():
     # call main function to get things done...
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 
-    sortedlist_stats = get_sorted(stats, type='etot', sortby='time')
+    sortedlist_stats = get_sorted(stats, type='position', sortby='time')
 
     energy = [entry[1] for entry in sortedlist_stats]
-
+    position=np.array(energy)
+    positoin=position.reshape(np.shape(position)[0],3)
     plt.figure()
-    plt.plot(energy, 'bo--')
+    plt.plot(position[:,2], 'b--')
 
     plt.xlabel('Time')
-    plt.ylabel('Energy')
+    plt.ylabel('Position')
 
-    plt.savefig('penningtrap_energy.png', transparent=True, bbox_inches='tight')
+    # plt.savefig('penningtrap_energy.png', transparent=True, bbox_inches='tight')
 
 
 if __name__ == "__main__":

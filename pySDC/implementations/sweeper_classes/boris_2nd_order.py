@@ -148,7 +148,8 @@ class boris_2nd_order(sweeper):
 
             # do the boris scheme
             L.u[m + 1].vel = P.boris_solver(ck, L.dt * np.diag(self.QI)[m + 1], L.f[m], L.f[m + 1], L.u[m])
-
+        import pdb
+        pdb.set_trace()
         # indicate presence of new values at this level
         L.status.updated = True
 

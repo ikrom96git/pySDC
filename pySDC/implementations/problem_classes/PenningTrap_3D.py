@@ -178,7 +178,7 @@ class penningtrap(ptype):
             penningtrap.Harmonic_oscillator
             Emat = np.diag([0, 0, -1])
         except AttributeError:
-            Emat = np.diag([1, 1, -2])
+            Emat = np.diag([-1, 1/2, 1/2])
 
         f = self.dtype_f(self.init)
 
@@ -186,7 +186,7 @@ class penningtrap(ptype):
 
         for n in range(N):
             f.elec[:, n] += self.omega_E**2 / (part.q[n] / part.m[n]) * np.dot(Emat, part.pos[:, n])
-            f.magn[:, n] = self.omega_B * np.array([0, 0, 1])
+            f.magn[:, n] = self.omega_B * np.array([1, 0, 0])
 
         return f
 
