@@ -7,7 +7,7 @@ from pySDC.implementations.controller_classes.controller_nonMPI import controlle
 from pySDC.implementations.problem_classes.PenningTrap_3D import penningtrap
 from pySDC.implementations.sweeper_classes.boris_2nd_order import boris_2nd_order
 # from pySDC.playgrounds.Boris.penningtrap_HookClass import particles_output
-from pySDC.projects.Second_orderSDC.penningtrap_HookClass import particles_output
+
 from pySDC.tutorial.step_4.PenningTrap_3D_coarse import penningtrap_coarse
 from pySDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles
 def main():
@@ -18,29 +18,29 @@ def main():
     # initialize level parameters
     level_params = dict()
     level_params['restol'] = 1e-16
-    level_params['dt'] = 0.0015625
+    level_params['dt'] = 0.1
 
     # initialize sweeper parameters
     sweeper_params = dict()
     sweeper_params['quad_type'] = 'GAUSS'
-    sweeper_params['num_nodes'] = [5, 5]
+    sweeper_params['num_nodes'] = [5, 3]
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
     problem_params['omega_E'] = 1
-    problem_params['omega_B'] = 1/0.1
-    problem_params['u0'] = np.array([[1, 1, 1], [1, 1, 1], [1], [1]], dtype=object)
+    problem_params['omega_B'] = 0.0
+    problem_params['u0'] = np.array([[0, 0, 1], [0, 0, 0], [1], [1]], dtype=object)
     problem_params['nparts'] = 1
     problem_params['sig'] = 0.1
 
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 5
+    step_params['maxiter'] = 10
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['hook_class'] = particles_output  # specialized hook class for more statistics and output
+    # controller_params['hook_class'] = particles_output  # specialized hook class for more statistics and output
     controller_params['logger_level'] = 30
 
     # Fill description dictionary for easy hierarchy creation

@@ -126,7 +126,7 @@ class boris_2nd_order(sweeper):
                 # tau is 0-to-node, need to change it to node-to-node here
                 if m > 0:
                     integral[m] -= L.tau[m - 1]
-
+        breakpoint()
         # do the sweep
         for m in range(0, M):
             # build rhs, consisting of the known values from above and new values from previous nodes (at k+1)
@@ -148,8 +148,7 @@ class boris_2nd_order(sweeper):
 
             # do the boris scheme
             L.u[m + 1].vel = P.boris_solver(ck, L.dt * np.diag(self.QI)[m + 1], L.f[m], L.f[m + 1], L.u[m])
-        import pdb
-        pdb.set_trace()
+        breakpoint()
         # indicate presence of new values at this level
         L.status.updated = True
 
