@@ -4,14 +4,14 @@ from pathlib import Path
 import numpy as np
 
 from pySDC.helpers.stats_helper import get_sorted
-
+from pySDC.helpers.plot_helper import figsize_by_journal
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.implementations.problem_classes.PenningTrap_3D import penningtrap
 from pySDC.implementations.sweeper_classes.boris_2nd_order import boris_2nd_order
 from pySDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles
 from pySDC.tutorial.step_3.HookClass_Particles import particle_hook
 from pySDC.tutorial.step_4.PenningTrap_3D_coarse import penningtrap_coarse
-
+import matplotlib.pyplot as plt
 
 def main():
     """
@@ -22,7 +22,7 @@ def main():
     stats_sdc, time_sdc = run_penning_trap_simulation(mlsdc=False)
     stats_mlsdc, time_mlsdc = run_penning_trap_simulation(mlsdc=True)
     stats_mlsdc_finter, time_mlsdc_finter = run_penning_trap_simulation(mlsdc=True, finter=True)
-
+    breakpoint()
     Path("data").mkdir(parents=True, exist_ok=True)
     f = open('data/step_4_D_out.txt', 'w')
     out = 'Timings for SDC, MLSDC and MLSDC+finter: %12.8f -- %12.8f -- %12.8f' % (
@@ -84,25 +84,29 @@ def run_penning_trap_simulation(mlsdc, finter=False):
     """
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-07
+    level_params['restol'] = 1e-16
     level_params['dt'] = 1.0 / 8
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'RADAU-RIGHT'
+    sweeper_params['quad_type'] = 'LOBATTO'
     sweeper_params['num_nodes'] = 5
+
+    sweeper_params_mlsdc = dict()
+    sweeper_params_mlsdc['quad_type'] = 'LOBATTO'
+    sweeper_params_mlsdc['num_nodes'] = [5, 3]
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
     problem_params['omega_E'] = 4.9  # E-field frequency
     problem_params['omega_B'] = 25.0  # B-field frequency
     problem_params['u0'] = np.array([[10, 0, 0], [100, 0, 100], [1], [1]], dtype=object)  # initial center of positions
-    problem_params['nparts'] = 50  # number of particles in the trap
+    problem_params['nparts'] = 1  # number of particles in the trap
     problem_params['sig'] = 0.1  # smoothing parameter for the forces
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 20
+    step_params['maxiter'] = 10
 
     # initialize controller parameters
     controller_params = dict()
@@ -117,12 +121,14 @@ def run_penning_trap_simulation(mlsdc, finter=False):
     if mlsdc:
         # MLSDC: provide list of two problem classes: one for the fine, one for the coarse level
         description['problem_class'] = [penningtrap, penningtrap_coarse]
+        description['sweeper_params']=sweeper_params_mlsdc
     else:
         # SDC: provide only one problem class
         description['problem_class'] = penningtrap
+        description['sweeper_params'] = sweeper_params
     description['problem_params'] = problem_params
     description['sweeper_class'] = boris_2nd_order
-    description['sweeper_params'] = sweeper_params
+    
     description['level_params'] = level_params
     description['step_params'] = step_params
     description['space_transfer_class'] = particles_to_particles
@@ -146,6 +152,35 @@ def run_penning_trap_simulation(mlsdc, finter=False):
 
     return stats, end_time
 
+def residual_sdc_mlsdc():
+    stats_sdc, time_sdc = run_penning_trap_simulation(mlsdc=False)
+    stats_mlsdc, time_mlsdc = run_penning_trap_simulation(mlsdc=True)
+
+    sortedlist_stats_sdc=get_sorted(stats_sdc, type='residual_post_sweep', sortby='iter')
+    sortedlist_stats_mlsdc=get_sorted(stats_mlsdc, type='residual_post_sweep', sortby='level')
+    sortedlist_stats_sdc_array=np.asarray(sortedlist_stats_sdc)
+    sortedlist_stats_mlsdc_array=np.asarray(sortedlist_stats_mlsdc)
+    fine_level_mlsdc, coarse_level_mlsdc=np.split(sortedlist_stats_mlsdc_array,2)
+    Residual=np.copy(sortedlist_stats_sdc_array)
+    Residual[:,0]=fine_level_mlsdc[:,1]
+    iteration=sortedlist_stats_sdc_array[:,0]
+    return Residual, iteration
+
+def plot_residual(x, y, labels):
+    figsize_by_journal('TUHH_thesis',10, 6)
+    for ii in range(len(labels)):
+        plt.semilogy(x, y[:, ii], label=labels[ii])
+    
+    plt.xlabel('Iteration')
+    plt.ylabel('$\|R\|_{\infty}$')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+
 
 if __name__ == "__main__":
-    main()
+    # main()
+    Residual, iteration=residual_sdc_mlsdc()
+    labels=['MLSDC', 'SDC']
+    plot_residual( iteration,Residual, labels=labels)

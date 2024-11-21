@@ -94,12 +94,10 @@ class PlotManager(object):  # pragma: no cover
                 ax1.set_ylabel(r'$\Delta x^{\mathrm{(abs)}}_{%d}$' % (value + 1))
             else:
                 ax1.set_ylabel(r'$\Delta x^{\mathrm{(rel)}}_{%d}$' % (value + 1))
-        ax1.set_title('{} order of convergence, $M={}$'.format(self.error_type, self.num_nodes))
+        # ax1.set_title('{} order of convergence, $M={}$'.format(self.error_type, self.num_nodes))
         ax1.set_xlabel(r'$\omega_{B} \cdot \Delta t$')
 
-        ax1.legend(loc='best')
-        fig1.tight_layout()
-        fig1.savefig(self.cwd + 'data/{}_conv_plot_pos{}.pdf'.format(self.error_type, value + 1))
+        
 
         for ii in range(0, N):
             ax2.loglog(time_data[ii, :], convline['vel'][value, ii, :], color='black')
@@ -131,7 +129,7 @@ class PlotManager(object):  # pragma: no cover
                 ax2.set_ylabel(r'$\Delta v^{\mathrm{(abs)}}_{%d}$' % (value + 1))
             else:
                 ax2.set_ylabel(r'$\Delta v^{\mathrm{(rel)}}_{%d}$' % (value + 1))
-        ax2.set_title(r'{} order of convergence, $M={}$'.format(self.error_type, self.num_nodes))
+        # ax2.set_title(r'{} order of convergence, $M={}$'.format(self.error_type, self.num_nodes))
         ax2.set_xlabel(r'$\omega_{B} \cdot \Delta t$')
         # =============================================================================
         #       Setting y axis min and max values
@@ -142,6 +140,11 @@ class PlotManager(object):  # pragma: no cover
         else:
             ax2.set_ylim(np.min(ax1.get_ylim()), np.max(ax2.get_ylim()))
             ax1.set_ylim(np.min(ax1.get_ylim()), np.max(ax2.get_ylim()))
+
+        ax1.legend(loc='best')
+        fig1.tight_layout()
+        fig1.savefig(self.cwd + 'data/{}_conv_plot_pos{}.pdf'.format(self.error_type, value + 1))
+        
         ax2.legend(loc='best')
         fig2.tight_layout()
         plt.show()
