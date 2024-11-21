@@ -28,7 +28,6 @@ def Error_mlsdc():
         uex_val[nn]=get_sorted(stats_mlsdc, type=f'{nn}_exact', sortby='time')
         error[nn]=relative_error(uex_val[nn], u_val[nn])
         error[nn]=list(error[nn].T[0])
-    breakpoint()
 
 
 def relative_error(uex_data, u_data):
