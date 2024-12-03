@@ -1,8 +1,10 @@
 import numpy as np
 
 from pySDC.core.problem import Problem
+from pySDC.core.errors import ProblemError
+from pySDC.implementations.problem_classes.HarmonicOscillator import harmonic_oscillator
 from pySDC.implementations.datatype_classes.particles import particles, acceleration
-
+from scipy.integrate import solve_ivp
 class duffingequation(Problem):
     dtype_u=particles
     dtype_f=acceleration
@@ -12,7 +14,7 @@ class duffingequation(Problem):
         super().__init__((1, None, np.dtype("float64")))
         self._makeAttributeAndRegister('omega', 'b', 'u0', 'epsilon', localVars=locals(), readOnly= True)
 
-    def eval_f(self, u, t);
+    def eval_f(self, u, t):
         
         me=self.dtype_f(self.init)
         me[:]=-self.omega**2*u.pos-self.epsilon*self.b*u.pos**3
@@ -27,28 +29,16 @@ class duffingequation(Problem):
         u.vel[0]=u[1]
 
     def u_exact(self, t):
-        pass
+        raise ProblemError('Exact solution of Duffing equation does not exist')
+    
+    def scipy_solve_ivp(self, t):
+        
 
-class duffing_zeros_model(duffingequation):
-
-    def __init__(self, omega=1, b=1, epsilon=0.1, u0=(1, 0)):
-        super().__init__(omega, b, epsilon, u0)
+class duffing_zeros_model(harmonic_oscillator):
+    def __init__(self, omega=1.0, u0=(1, 0)):
+        super().__init__(k=omega**2, u0=u0)
     
-    def eval_f(self, u, t):
-        me=self.dtype_f(self.init)
-        me[:]=-self.omega**2*u.pos
-        return me
-    
-    def u_init(self):
-        return super().u_init()
-    
-    def u_exact(self, t):
-        me=self.dtype_f(self.init)
-        z=t*self.omega
-        me.pos=self.u0[0]*np.cos(z)+(self.u0[1]/self.omega)*np.sin(z)
-        me.vel=self.u0[1]*np.cos(z)-self.u0[0]*self.omega*np.sin(z)
-        return me
-    
+   
 class duffing_first_model(duffingequation):
     def __init__(self, omega=1, b=1, epsilon=0.1, u0=(1, 0)):
         super().__init__(omega, b, epsilon, u0)
@@ -83,4 +73,12 @@ class duffing_first_model(duffingequation):
         me.vel=u_zeros.vel+self.epsilon*u_first.vel
         return me
 
-
+if __name__=='__main__':
+    problem_params=dict()
+    problem_params['k']=1.0
+    problem_params['mu']=0.0
+    problem_params['u0']=np.array([1, 0])
+    zeros=duffing_zeros_model()
+    u_ex=zeros.u_exact(0.1)
+    breakpoint()
+    print(u_ex)
