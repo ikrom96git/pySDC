@@ -40,7 +40,7 @@ def test_reduced_models():
         return (0.25 * (P.duffing_zeros.u0[0] ** 3) * P.b * P.omega) * (3 * np.sin(3 * z) + 3 * np.sin(z))
 
     num_nodes = 5
-    nodes = np.sort(np.random.rand(num_nodes) / 8)
+    nodes = np.sort(np.random.rand(num_nodes) / 16)
     approx = LagrangeApproximation(nodes)
     D1 = approx.getDerivationMatrix()
     u = P.u_init()
