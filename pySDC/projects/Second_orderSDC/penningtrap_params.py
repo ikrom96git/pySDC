@@ -53,13 +53,12 @@ def penningtrap_params():
 
 
 def penningtrap_params_mlsdc():
-        
     """
-Define the penning trap probem params
-Returns:
-    controller params
-    description
-"""
+    Define the penning trap probem params
+    Returns:
+        controller params
+        description
+    """
 
     # initialize level parameters
     level_params = dict()
@@ -68,7 +67,7 @@ Returns:
     level_params['dt'] = 0.015625
     transfer_params = dict()
     transfer_params['finter'] = False
-    
+
     # initialize sweeper parameters
     sweeper_params = dict()
     sweeper_params['quad_type'] = 'GAUSS'

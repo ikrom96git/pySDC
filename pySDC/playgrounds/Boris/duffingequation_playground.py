@@ -16,7 +16,9 @@ def solution_Duffing_equation():
     t0=0.0
     tend=2*np.pi 
     time=np.linspace(t0, tend, 1000)
-    duffing_solution=duffing.scipy_solve_ivp(tend, time)
+    
+    duffing_solution=duffing.scipy_solution()
+    breakpoint()
     return duffing_solution.pos
 def solution_duffing_zeros_model():
     duffing_zeros=duffing_zeros_model()

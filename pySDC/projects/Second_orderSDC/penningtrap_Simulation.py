@@ -3,6 +3,7 @@ import numpy as np
 from pySDC.helpers.stats_helper import get_sorted
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.projects.Second_orderSDC.penningtrap_HookClass import particles_output
+
 # from pySDC.implementations.sweeper_classes.Runge_Kutta_Nystrom import Velocity_Verlet
 from pySDC.projects.Second_orderSDC.plot_helper import PlotManager
 
@@ -216,9 +217,9 @@ class ComputeError(PlotManager):
 
     def global_order(self, order_K, order_quad):
         if self.quad_type == 'GAUSS' or self.quad_type == 'RADAU-RIGHT':
-            return np.array([np.min([2*order_K, order_quad]), np.min([order_K+3, order_quad])])
+            return np.array([np.min([2 * order_K, order_quad]), np.min([order_K + 3, order_quad])])
         elif self.quad_type == 'LOBATTO' or self.quad_type == 'RADAU-LEFT':
-            return np.array([np.min([2*order_K, order_quad]), np.min([ order_K+1, order_quad])]) + 2
+            return np.array([np.min([2 * order_K, order_quad]), np.min([order_K + 1, order_quad])]) + 2
         else:
             raise NotImplementedError('Order of convergence explicitly not implemented')
 

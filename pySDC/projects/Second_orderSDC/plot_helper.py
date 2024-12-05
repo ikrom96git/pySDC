@@ -97,8 +97,6 @@ class PlotManager(object):  # pragma: no cover
         # ax1.set_title('{} order of convergence, $M={}$'.format(self.error_type, self.num_nodes))
         ax1.set_xlabel(r'$\omega_{B} \cdot \Delta t$')
 
-        
-
         for ii in range(0, N):
             ax2.loglog(time_data[ii, :], convline['vel'][value, ii, :], color='black')
             ax2.loglog(
@@ -144,7 +142,7 @@ class PlotManager(object):  # pragma: no cover
         ax1.legend(loc='best')
         fig1.tight_layout()
         fig1.savefig(self.cwd + 'data/{}_conv_plot_pos{}.pdf'.format(self.error_type, value + 1))
-        
+
         ax2.legend(loc='best')
         fig2.tight_layout()
         plt.show()

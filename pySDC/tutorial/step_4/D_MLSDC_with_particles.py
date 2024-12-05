@@ -13,6 +13,7 @@ from pySDC.tutorial.step_3.HookClass_Particles import particle_hook
 from pySDC.tutorial.step_4.PenningTrap_3D_coarse import penningtrap_coarse
 import matplotlib.pyplot as plt
 
+
 def main():
     """
     A simple test program to compare SDC with two flavors of MLSDC for particle dynamics
@@ -121,14 +122,14 @@ def run_penning_trap_simulation(mlsdc, finter=False):
     if mlsdc:
         # MLSDC: provide list of two problem classes: one for the fine, one for the coarse level
         description['problem_class'] = [penningtrap, penningtrap_coarse]
-        description['sweeper_params']=sweeper_params_mlsdc
+        description['sweeper_params'] = sweeper_params_mlsdc
     else:
         # SDC: provide only one problem class
         description['problem_class'] = penningtrap
         description['sweeper_params'] = sweeper_params
     description['problem_params'] = problem_params
     description['sweeper_class'] = boris_2nd_order
-    
+
     description['level_params'] = level_params
     description['step_params'] = step_params
     description['space_transfer_class'] = particles_to_particles
@@ -152,25 +153,27 @@ def run_penning_trap_simulation(mlsdc, finter=False):
 
     return stats, end_time
 
+
 def residual_sdc_mlsdc():
     stats_sdc, time_sdc = run_penning_trap_simulation(mlsdc=False)
     stats_mlsdc, time_mlsdc = run_penning_trap_simulation(mlsdc=True)
 
-    sortedlist_stats_sdc=get_sorted(stats_sdc, type='residual_post_sweep', sortby='iter')
-    sortedlist_stats_mlsdc=get_sorted(stats_mlsdc, type='residual_post_sweep', sortby='level')
-    sortedlist_stats_sdc_array=np.asarray(sortedlist_stats_sdc)
-    sortedlist_stats_mlsdc_array=np.asarray(sortedlist_stats_mlsdc)
-    fine_level_mlsdc, coarse_level_mlsdc=np.split(sortedlist_stats_mlsdc_array,2)
-    Residual=np.copy(sortedlist_stats_sdc_array)
-    Residual[:,0]=fine_level_mlsdc[:,1]
-    iteration=sortedlist_stats_sdc_array[:,0]
+    sortedlist_stats_sdc = get_sorted(stats_sdc, type='residual_post_sweep', sortby='iter')
+    sortedlist_stats_mlsdc = get_sorted(stats_mlsdc, type='residual_post_sweep', sortby='level')
+    sortedlist_stats_sdc_array = np.asarray(sortedlist_stats_sdc)
+    sortedlist_stats_mlsdc_array = np.asarray(sortedlist_stats_mlsdc)
+    fine_level_mlsdc, coarse_level_mlsdc = np.split(sortedlist_stats_mlsdc_array, 2)
+    Residual = np.copy(sortedlist_stats_sdc_array)
+    Residual[:, 0] = fine_level_mlsdc[:, 1]
+    iteration = sortedlist_stats_sdc_array[:, 0]
     return Residual, iteration
 
+
 def plot_residual(x, y, labels):
-    figsize_by_journal('TUHH_thesis',10, 6)
+    figsize_by_journal('TUHH_thesis', 10, 6)
     for ii in range(len(labels)):
         plt.semilogy(x, y[:, ii], label=labels[ii])
-    
+
     plt.xlabel('Iteration')
     plt.ylabel('$\|R\|_{\infty}$')
     plt.legend()
@@ -178,9 +181,8 @@ def plot_residual(x, y, labels):
     plt.show()
 
 
-
 if __name__ == "__main__":
     # main()
-    Residual, iteration=residual_sdc_mlsdc()
-    labels=['MLSDC', 'SDC']
-    plot_residual( iteration,Residual, labels=labels)
+    Residual, iteration = residual_sdc_mlsdc()
+    labels = ['MLSDC', 'SDC']
+    plot_residual(iteration, Residual, labels=labels)
