@@ -60,7 +60,7 @@ def test_reduced_models():
     approx_derivative = D1 @ func_vals
     assert np.allclose(
         derivative_f, approx_derivative, atol=1e-6
-    ), 'Approximate derivative and derivative of RHS function do not reat tolerence!'
+    ), 'Approximate derivative and derivative of RHS function do not reach tolerence!'
 
 
 @pytest.mark.base
