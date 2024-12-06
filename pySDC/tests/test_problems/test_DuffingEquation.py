@@ -1,13 +1,6 @@
 import pytest
 import numpy as np
 from pySDC.implementations.problem_classes.DuffingEquation import duffingequation, duffing_first_model
-from qmat.lagrange import LagrangeApproximation
-
-import pytest
-import numpy as np
-from pySDC.implementations.problem_classes.DuffingEquation import duffingequation
-from pySDC.core.errors import ProblemError
-from pySDC.implementations.datatype_classes.particles import particles, acceleration
 
 
 @pytest.mark.parametrize(
