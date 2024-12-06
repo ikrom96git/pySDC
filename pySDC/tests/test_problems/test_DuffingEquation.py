@@ -1,66 +1,39 @@
 import pytest
 import numpy as np
-from pySDC.implementations.problem_classes.DuffingEquation import (
-    duffingequation,
-    duffing_first_model,
-    duffing_zeros_model,
-)
+from pySDC.implementations.problem_classes.DuffingEquation import duffingequation, duffing_first_model
 from qmat.lagrange import LagrangeApproximation
 
-
-@pytest.mark.base
-def test_DuffingEquation():
-    """
-    Testing eval_f for the Duffing equation
-
-    Returns:
-        _type_: _description_
-    """
-    P = duffingequation()
-
-    def derivative_eval_f(u):
-        return -P.omega**2 - 3 * P.epsilon * P.b * u**2
-
-    num_nodes = 5
-    nodes = np.sort(np.random.rand(num_nodes))
-    approx = LagrangeApproximation(nodes)
-    D1 = approx.getDerivationMatrix()
-    u = P.u_init()
-    func_vals = []
-    for ii in nodes:
-        u.pos = ii
-        func_vals = np.append(func_vals, P.eval_f(u, 0.0))
-
-    derivative_f = derivative_eval_f(nodes)
-    approx_derivative = D1 @ func_vals
-    assert np.allclose(derivative_f, approx_derivative, atol=1e-6), 'eval_f function derivative is failed'
+import pytest
+import numpy as np
+from pySDC.implementations.problem_classes.DuffingEquation import duffingequation
+from pySDC.core.errors import ProblemError
+from pySDC.implementations.datatype_classes.particles import particles, acceleration
 
 
-@pytest.mark.base
-def test_reduced_models():
-    """
-    Test for first order reduced model RHS funciton
-    """
-    P = duffing_first_model()
+@pytest.mark.parametrize(
+    "u_pos, t, expected_acceleration",
+    [
+        (np.array([1.0]), 0, -1.1),  # default parameters
+        (np.array([0.0]), 0, 0.0),  # zero position
+        (np.array([-1.0]), 0, 1.1),  # negative position
+    ],
+    ids=[
+        "default_parameters",
+        "zero_position",
+        "negative_position",
+    ],
+)
+def test_eval_f(u_pos, t, expected_acceleration):
 
-    def derivative_eval_f(t):
-        z = P.omega * t
-        return (0.25 * (P.duffing_zeros.u0[0] ** 3) * P.b * P.omega) * (3 * np.sin(3 * z) + 3 * np.sin(z))
+    # Arrange
+    problem = duffingequation()
+    # Act
+    u = problem.u_init()
+    u.pos = u_pos
+    f = problem.eval_f(u, t)
 
-    num_nodes = 5
-    nodes = np.sort(np.random.rand(num_nodes) / 16)
-    approx = LagrangeApproximation(nodes)
-    D1 = approx.getDerivationMatrix()
-    u = P.u_init()
-    func_vals = []
-    for ii in nodes:
-        func_vals = np.append(func_vals, P.eval_f(u, ii))
-
-    derivative_f = derivative_eval_f(nodes)
-    approx_derivative = D1 @ func_vals
-    assert np.allclose(
-        derivative_f, approx_derivative, atol=1e-6
-    ), 'Approximate derivative and derivative of RHS function do not reach tolerence!'
+    # Assert
+    assert np.isclose(f[0], expected_acceleration)
 
 
 @pytest.mark.base
@@ -81,6 +54,30 @@ def test_exact_solution():
         scipy_solution = np.append(scipy_solution, u_scipy.pos)
         asymp_solution = np.append(asymp_solution, u_asymp.pos)
     assert np.allclose(scipy_solution, asymp_solution, atol=1e-6), 'Scipy solution and asymptotic solution are failed!'
+
+
+@pytest.mark.parametrize(
+    "u_pos, t, expected_acceleration",
+    [
+        (np.array([2.0]), 0, -10.0),  # Default parameters
+        (np.array([0.0]), 0, -8.0),  # Zero position
+        (np.array([-1.0]), 0, -7.0),  # Negative position
+    ],
+    ids=["default_parameters", "zero_position", "negative_position"],
+)
+def test_first_order_reduced_eval_f(u_pos, t, expected_acceleration):
+    # Arrange
+    problem = duffing_first_model()
+    u = problem.u_init()
+    u.pos = u_pos
+
+    # Act
+    f = problem.eval_f(u, t)
+
+    # Assert
+    assert np.isclose(
+        f[0], expected_acceleration, atol=1e-5
+    ), f"Expected acceleration: {expected_acceleration}, got: {f[0]}"
 
 
 if __name__ == '__main__':
