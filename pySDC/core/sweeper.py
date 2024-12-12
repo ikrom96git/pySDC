@@ -161,6 +161,8 @@ class Sweeper(object):
             elif self.params.initial_guess == 'random':
                 L.u[m] = P.dtype_u(init=P.init, val=self.rng.rand(1)[0])
                 L.f[m] = P.dtype_f(init=P.init, val=self.rng.rand(1)[0])
+            elif self.params.initial_guess == 'random':
+                pass
             else:
                 raise ParameterError(f'initial_guess option {self.params.initial_guess} not implemented')
 

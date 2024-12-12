@@ -72,7 +72,6 @@ class particles_output(Hooks):
             pass
         # =============================================================================
 
-        part_exact = L.prob.u_exact(L.time + L.dt)
         self.add_to_stats(
             process=step.status.slot,
             time=L.time,
@@ -82,6 +81,7 @@ class particles_output(Hooks):
             type='position',
             value=part.pos,
         )
+        
         self.add_to_stats(
             process=step.status.slot,
             time=L.time,
@@ -91,21 +91,23 @@ class particles_output(Hooks):
             type='velocity',
             value=part.vel,
         )
-        self.add_to_stats(
-            process=step.status.slot,
-            time=L.time,
-            level=L.level_index,
-            iter=step.status.iter,
-            sweep=L.status.sweep,
-            type='position_exact',
-            value=part_exact.pos,
-        )
-        self.add_to_stats(
-            process=step.status.slot,
-            time=L.time,
-            level=L.level_index,
-            iter=step.status.iter,
-            sweep=L.status.sweep,
-            type='velocity_exact',
-            value=part_exact.vel,
-        )
+        # part_exact = L.prob.u_exact(L.time + L.dt)
+        
+        # self.add_to_stats(
+        #     process=step.status.slot,
+        #     time=L.time,
+        #     level=L.level_index,
+        #     iter=step.status.iter,
+        #     sweep=L.status.sweep,
+        #     type='position_exact',
+        #     value=part_exact.pos,
+        # )
+        # self.add_to_stats(
+        #     process=step.status.slot,
+        #     time=L.time,
+        #     level=L.level_index,
+        #     iter=step.status.iter,
+        #     sweep=L.status.sweep,
+        #     type='velocity_exact',
+        #     value=part_exact.vel,
+        # )
