@@ -161,8 +161,14 @@ class Sweeper(object):
             elif self.params.initial_guess == 'random':
                 L.u[m] = P.dtype_u(init=P.init, val=self.rng.rand(1)[0])
                 L.f[m] = P.dtype_f(init=P.init, val=self.rng.rand(1)[0])
-            elif self.params.initial_guess == 'random':
-                pass
+            elif self.params.initial_guess == 'zeros_order_Model':
+                
+                L.u[m]=P.zerosOrderModel.u_exact(self.coll.nodes[m-1])
+                L.f[m]=P.eval_f(L.u[m], L.time+L.dt*self.coll.nodes[m-1])
+            elif self.params.initial_guess == 'first_order_Model':
+                breakpoint()
+                L.u[m]=P.firstOrderModel.u_asymptotic_expansion(self.coll.nodes[m-1])
+                L.f[m]=P.eval_f(L.u[m], L.time+L.dt*self.coll.nodes[m-1])
             else:
                 raise ParameterError(f'initial_guess option {self.params.initial_guess} not implemented')
 

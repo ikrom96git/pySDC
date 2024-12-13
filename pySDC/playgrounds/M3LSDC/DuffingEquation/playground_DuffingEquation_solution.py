@@ -4,7 +4,7 @@ import numpy as np
 from pySDC.helpers.stats_helper import get_sorted
 
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
-from pySDC.playgrounds.DuffingEquation.problem_class_DuffingEquation import duffingequation
+from pySDC.playgrounds.M3LSDC.DuffingEquation.problem_class_DuffingEquation import duffingequation
 from pySDC.implementations.sweeper_classes.boris_2nd_order import boris_2nd_order
 from pySDC.projects.Second_orderSDC.penningtrap_HookClass import particles_output
 
@@ -16,7 +16,7 @@ def main():
     sweeper_params=dict()
     sweeper_params['quad_type']='GAUSS'
     sweeper_params['num_nodes']=5
-
+    sweeper_params['initial_guess']='first_order_Model'
     problem_params=dict()
     problem_params['omega']=1.0
     problem_params['b']=1.0
