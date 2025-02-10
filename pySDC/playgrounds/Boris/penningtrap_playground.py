@@ -17,12 +17,12 @@ def main():
     # initialize level parameters
     level_params = dict()
     level_params['restol'] = 1e-08
-    level_params['dt'] = 0.015625
+    level_params['dt'] = 1.0/8
 
     # initialize sweeper parameters
     sweeper_params = dict()
     sweeper_params['quad_type'] = 'LOBATTO'
-    sweeper_params['num_nodes'] = 3
+    sweeper_params['num_nodes'] = 5
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()

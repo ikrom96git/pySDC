@@ -17,7 +17,7 @@ def penningtrap_params():
     level_params = dict()
     level_params['restol'] = 1e-16
     # It needs to be changed according to the axis that you are choosing
-    level_params['dt'] = 0.015625
+    level_params['dt'] = 1.0/8
 
     # initialize sweeper parameters
     sweeper_params = dict()
@@ -25,7 +25,7 @@ def penningtrap_params():
     sweeper_params['num_nodes'] = 5
     sweeper_params['do_coll_update'] = True
     # initial guess can be changed and it affects the convergence order of the SDC method
-    sweeper_params['initial_guess'] = 'random'  # 'zero', 'spread'
+    sweeper_params['initial_guess'] = 'spread'  # 'zero', 'spread'
 
     # initialize problem parameters for the penning trap
     problem_params = dict()
@@ -64,7 +64,7 @@ def penningtrap_params_mlsdc():
     level_params = dict()
     level_params['restol'] = 1e-16
     # It needs to be changed according to the axis that you are choosing
-    level_params['dt'] = 0.015625
+    level_params['dt'] = 1.0/8
     transfer_params = dict()
     transfer_params['finter'] = False
 
@@ -100,3 +100,5 @@ def penningtrap_params_mlsdc():
     description['space_transfer_class'] = particles_to_particles
     description['base_transfer_params'] = transfer_params
     return controller_params, description
+
+

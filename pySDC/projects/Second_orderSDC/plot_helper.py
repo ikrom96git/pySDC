@@ -6,7 +6,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-FONT_SIZE = 16
+FONT_SIZE = 15
 FIG_SIZE = (7.44, 6.74)
 
 

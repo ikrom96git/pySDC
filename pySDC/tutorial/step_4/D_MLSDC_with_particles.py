@@ -12,8 +12,9 @@ from pySDC.implementations.transfer_classes.TransferParticles_NoCoarse import pa
 from pySDC.tutorial.step_3.HookClass_Particles import particle_hook
 from pySDC.tutorial.step_4.PenningTrap_3D_coarse import penningtrap_coarse
 import matplotlib.pyplot as plt
+from pySDC.projects.Second_orderSDC.plot_helper import set_fixed_plot_params
 
-
+set_fixed_plot_params()
 def main():
     """
     A simple test program to compare SDC with two flavors of MLSDC for particle dynamics
@@ -79,7 +80,7 @@ def main():
     )
 
 
-def run_penning_trap_simulation(mlsdc, finter=False):
+def run_penning_trap_simulation(mlsdc, finter=False, iter=3):
     """
     A simple test program to run IMEX SDC for a single time step
     """
@@ -90,12 +91,12 @@ def run_penning_trap_simulation(mlsdc, finter=False):
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'LOBATTO'
-    sweeper_params['num_nodes'] = 5
+    sweeper_params['quad_type'] = 'GAUSS'
+    sweeper_params['num_nodes'] = 6
 
     sweeper_params_mlsdc = dict()
-    sweeper_params_mlsdc['quad_type'] = 'LOBATTO'
-    sweeper_params_mlsdc['num_nodes'] = [5, 3]
+    sweeper_params_mlsdc['quad_type'] = 'GAUSS'
+    sweeper_params_mlsdc['num_nodes'] = [6, iter]
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
@@ -121,7 +122,7 @@ def run_penning_trap_simulation(mlsdc, finter=False):
     description = dict()
     if mlsdc:
         # MLSDC: provide list of two problem classes: one for the fine, one for the coarse level
-        description['problem_class'] = [penningtrap, penningtrap_coarse]
+        description['problem_class'] = [penningtrap, penningtrap]
         description['sweeper_params'] = sweeper_params_mlsdc
     else:
         # SDC: provide only one problem class
@@ -156,33 +157,54 @@ def run_penning_trap_simulation(mlsdc, finter=False):
 
 def residual_sdc_mlsdc():
     stats_sdc, time_sdc = run_penning_trap_simulation(mlsdc=False)
-    stats_mlsdc, time_mlsdc = run_penning_trap_simulation(mlsdc=True)
+    stats_mlsdc3, time_mlsdc = run_penning_trap_simulation(mlsdc=True, iter=3)
+    stats_mlsdc4, *_=run_penning_trap_simulation(mlsdc=True, iter=4)
+    stats_mlsdc5, *_=run_penning_trap_simulation(mlsdc=True, iter=5)
 
     sortedlist_stats_sdc = get_sorted(stats_sdc, type='residual_post_sweep', sortby='iter')
-    sortedlist_stats_mlsdc = get_sorted(stats_mlsdc, type='residual_post_sweep', sortby='level')
     sortedlist_stats_sdc_array = np.asarray(sortedlist_stats_sdc)
-    sortedlist_stats_mlsdc_array = np.asarray(sortedlist_stats_mlsdc)
-    fine_level_mlsdc, coarse_level_mlsdc = np.split(sortedlist_stats_mlsdc_array, 2)
-    Residual = np.copy(sortedlist_stats_sdc_array)
-    Residual[:, 0] = fine_level_mlsdc[:, 1]
+    sortedlist_stats_mlsdc3 = get_sorted(stats_mlsdc3, type='residual_post_sweep', sortby='level')
+    sortedlist_stats_mlsdc4 = get_sorted(stats_mlsdc4, type='residual_post_sweep', sortby='level')
+    sortedlist_stats_mlsdc5 = get_sorted(stats_mlsdc5, type='residual_post_sweep', sortby='level')
+
+    sortedlist_stats_mlsdc_array3 = np.asarray(sortedlist_stats_mlsdc3)
+    sortedlist_stats_mlsdc_array4 = np.asarray(sortedlist_stats_mlsdc4)
+    sortedlist_stats_mlsdc_array5 = np.asarray(sortedlist_stats_mlsdc5)
+
+    fine_level_mlsdc3, coarse_level_mlsdc = np.split(sortedlist_stats_mlsdc_array3, 2)
+    fine_level_mlsdc4, coarse_level_mlsdc = np.split(sortedlist_stats_mlsdc_array4, 2)
+    fine_level_mlsdc5, coarse_level_mlsdc = np.split(sortedlist_stats_mlsdc_array5, 2)
+    Residual=np.zeros((np.shape(sortedlist_stats_sdc_array[:,1])[0], 4))
+
+    Residual[:,0] = np.copy(sortedlist_stats_sdc_array)[:,1]
+    Residual[:, 1] = fine_level_mlsdc3[:, 1]
+    Residual[:, 2] = fine_level_mlsdc4[:, 1]
+    Residual[:, 3] = fine_level_mlsdc5[:, 1]
+
+
+
     iteration = sortedlist_stats_sdc_array[:, 0]
     return Residual, iteration
 
 
 def plot_residual(x, y, labels):
-    figsize_by_journal('TUHH_thesis', 10, 6)
+    # figsize_by_journal('TUHH_thesis', 10, 6)
+    mark=['s', 'o', '.', '*']
+    colors=['black', "red", "blue", "green"]
     for ii in range(len(labels)):
-        plt.semilogy(x, y[:, ii], label=labels[ii])
+        plt.semilogy(x, y[:, ii], label=labels[ii], color=colors[ii], marker=mark[ii])
 
     plt.xlabel('Iteration')
     plt.ylabel('$\|R\|_{\infty}$')
     plt.legend()
     plt.tight_layout()
+    plt.savefig("data/residual_SDC_vs_MLSDC.pdf")
     plt.show()
+
 
 
 if __name__ == "__main__":
     # main()
     Residual, iteration = residual_sdc_mlsdc()
-    labels = ['MLSDC', 'SDC']
+    labels = ['SDC', 'MLSDC $(6,3)$', 'MLSDC $(6,4)$', 'MLSDC $(6,5)$']
     plot_residual(iteration, Residual, labels=labels)
