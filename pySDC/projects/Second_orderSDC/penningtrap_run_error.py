@@ -22,8 +22,8 @@ if __name__ == '__main__':
     controller_params, description = penningtrap_params_mlsdc()
     ## =============================================================================
     ##     dt-timestep and num_nodes can be changed here manually
-    description['level_params']['dt'] = 0.015625 * 4
-    description['sweeper_params']['num_nodes'] = [5, 4]
+    description['level_params']['dt'] = 0.015625 *4
+    description['sweeper_params']['num_nodes'] = [5, 3]
     ## =============================================================================
     # Give the parameters to the class
     conv = ComputeError(controller_params, description, time_iter=3, K_iter=(1, 2, 3), axes=(2,))

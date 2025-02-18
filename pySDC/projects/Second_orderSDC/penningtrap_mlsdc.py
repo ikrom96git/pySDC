@@ -1,7 +1,7 @@
 import numpy as np
 from pySDC.helpers.stats_helper import get_sorted
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
-# from pySDC.projects.Second_orderSDC.penningtrap_HookClass import particles_output # for convergence of MLSDC
+from pySDC.projects.Second_orderSDC.penningtrap_HookClass import particles_output # for convergence of MLSDC
 # from pySDC.playgrounds.Boris.penningtrap_HookClass import particles_output
 from pySDC.tutorial.step_3.HookClass_Particles import particle_hook
 from pySDC.projects.Second_orderSDC.penningtrap_params import penningtrap_params_mlsdc, penningtrap_params
@@ -35,6 +35,7 @@ def Error_mlsdc():
         uex_val[nn] = get_sorted(stats_mlsdc, type=f'{nn}_exact', sortby='time')
         error[nn] = relative_error(uex_val[nn], u_val[nn])
         error[nn] = list(error[nn].T[0])
+    breakpoint()
 
 
 def residual_mlsdc():
@@ -60,7 +61,7 @@ def residual_mlsdc():
     sortedlist_stats_mlsdc = get_sorted(stats_mlsdc, type='residual_post_sweep', sortby='level')
     sortedlist_stats_mlsdc_array = np.asarray(sortedlist_stats_mlsdc)
     fine_level_mlsdc, coarse_level_mlsdc = np.split(sortedlist_stats_mlsdc_array, 2)
-    
+
     return fine_level_mlsdc[:,1]
 
 
@@ -99,7 +100,7 @@ def plot_residual_sdc_vs_mlsdc():
     figsize_by_journal("TUHH_thesis", 10, 6)
     Residual, iteration=residual_sdc()
     fine_residual=residual_mlsdc()
-    
+
     Residual[:, 0]=fine_residual
     breakpoint()
     labels=['MLSDC', 'SDC']
@@ -111,9 +112,9 @@ def plot_residual_sdc_vs_mlsdc():
     plt.tight_layout()
     plt.show()
 
-    
+
 
 
 if __name__ == '__main__':
-    # Error_mlsdc()
-    plot_residual_sdc_vs_mlsdc()
+    Error_mlsdc()
+    #plot_residual_sdc_vs_mlsdc()
