@@ -9,8 +9,9 @@ from pySDC.implementations.sweeper_classes.boris_2nd_order import boris_2nd_orde
 from pySDC.playgrounds.Boris.penningtrap_HookClass import particles_output
 from pySDC.playgrounds.M3LSDC.NonUniformElectricField import non_uniformElectricField
 from pySDC.playgrounds.M3LSDC.NonUniform_zeroth_order import non_uniform_zeroth_order
-from pSDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles
-
+# from pSDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles
+from pySDC.playgrounds.M3LSDC.NonUniform_first_order import non_uniform_first_order
+from pySDC.implementations.sweeper_classes.explicit import explicit
 
 def main():
     """
@@ -25,13 +26,13 @@ def main():
     # initialize sweeper parameters
     sweeper_params = dict()
     sweeper_params['quad_type'] = 'LOBATTO'
-    sweeper_params['num_nodes'] = [5, 3]
+    sweeper_params['num_nodes'] = 5
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
     problem_params['omega_E'] = 4.9
     problem_params['omega_B'] = 25.0
-    problem_params['u0'] = np.array([[10, 0, 0], [100, 0, 100], [1], [1]], dtype=object)
+    problem_params['u0'] = np.array([1,1,1,1,1,1])
     problem_params['nparts'] = 1
     problem_params['sig'] = 0.1
     # problem_params['Tend'] = 16.0
@@ -48,19 +49,19 @@ def main():
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['hook_class'] = particles_output  # specialized hook class for more statistics and output
+    # controller_params['hook_class'] = particles_output  # specialized hook class for more statistics and output
     controller_params['logger_level'] = 30
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = [non_uniformElectricField, non_uniform_zeroth_order]
+    description['problem_class'] = non_uniform_first_order
     description['problem_params'] = problem_params
-    description['sweeper_class'] = boris_2nd_order
+    description['sweeper_class'] = explicit
     description['sweeper_params'] = sweeper_params
     description['level_params'] = level_params
-    description['space_transfer_class'] = particles_to_particles # this is only needed for more than 2 levels
+    # description['space_transfer_class'] = particles_to_particles # this is only needed for more than 2 levels
     description['step_params'] = step_params
-    description['transfer_params'] = transfer_params
+    # description['transfer_params'] = transfer_params
 
     # instantiate the controller (no controller parameters used here)
     controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
@@ -75,7 +76,7 @@ def main():
 
     # call main function to get things done...
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
-
+    breakpoint()
     sortedlist_stats = get_sorted(stats, type='etot', sortby='time')
 
     energy = [entry[1] for entry in sortedlist_stats]
