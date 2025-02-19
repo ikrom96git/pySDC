@@ -149,8 +149,8 @@ class boris_2nd_order(Sweeper):
             # do the boris scheme
             L.u[m + 1].vel = P.boris_solver(ck, L.dt * np.diag(self.QI)[m + 1], L.f[m], L.f[m + 1], L.u[m])
         if P.coarse_zeroth_order:
-            for m in range(M ):
-                L.u[m+1].vel = P.R_matrix(L.time + L.dt * self.coll.nodes[m], 0.1, 0) @ L.u[m+1].vel
+            for m in range(M):
+                L.u[m + 1].vel = P.R_matrix(L.time + L.dt * self.coll.nodes[m], 0.1, 0) @ L.u[m + 1].vel
         # indicate presence of new values at this level
         L.status.updated = True
 
