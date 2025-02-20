@@ -102,7 +102,7 @@ class generic_implicit(Sweeper):
 
         # indicate presence of new values at this level
         L.status.updated = True
-
+        
         return None
 
     def compute_end_point(self):

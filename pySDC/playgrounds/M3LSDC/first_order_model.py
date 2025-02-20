@@ -12,6 +12,7 @@ from pySDC.playgrounds.M3LSDC.NonUniform_zeroth_order import non_uniform_zeroth_
 # from pSDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles
 from pySDC.playgrounds.M3LSDC.NonUniform_first_order import non_uniform_first_order
 from pySDC.implementations.sweeper_classes.explicit import explicit
+from pySDC.implementations.sweeper_classes.generic_implicit import generic_implicit
 
 def main():
     """
@@ -56,7 +57,7 @@ def main():
     description = dict()
     description['problem_class'] = non_uniform_first_order
     description['problem_params'] = problem_params
-    description['sweeper_class'] = explicit
+    description['sweeper_class'] = generic_implicit
     description['sweeper_params'] = sweeper_params
     description['level_params'] = level_params
     # description['space_transfer_class'] = particles_to_particles # this is only needed for more than 2 levels

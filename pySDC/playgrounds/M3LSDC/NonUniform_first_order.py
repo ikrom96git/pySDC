@@ -174,6 +174,8 @@ class non_uniform_first_order(Problem):
         
         self.work_counters['rhs']()
         c=2.0
+        # breakpoint()
+
         Y=u[:6]
         U=u[6:]
         
@@ -222,6 +224,41 @@ class non_uniform_first_order(Problem):
         u[:6]=u0
         u[6:]=np.zeros(6)
         return u
+    def fuct(self, x, dt, rhs):
+        Y=x[:6]
+        U=x[6:]
+        c=2.0
+        f = self.dtype_f(self.init)
+        f[0]=Y[3]
+        f[1]=0.0
+        f[2]=0.0
+        f[3]=-c*Y[0]
+        f[4]=0.0
+        f[5]=0.0
+        
+        f[6]=U[3]
+        f[7]=(c/2)*Y[2]
+        f[8]=(-c/2)*Y[1]
+        f[9]=-c*U[0]
+        f[10]=(-c/2)*Y[5]
+        f[11]=(c/2)*Y[4]
+        return x-dt*f-rhs
+
+    def solve_system(self, rhs, dt, u0, t):
+        from scipy.optimize import newton
+        u_array=np.zeros(12)
+        # np.copyto()
+
+
+        u=newton(self.fuct, u0, args=(dt, rhs))
+        me=self.dtype_u(self.init)
+        np.copyto(me, u)
+        
+        return me
+        
+        
+        
+
 
     def u_exact(self, t):
         r"""
