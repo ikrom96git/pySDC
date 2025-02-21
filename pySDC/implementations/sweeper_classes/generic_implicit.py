@@ -99,8 +99,14 @@ class generic_implicit(Sweeper):
             # update function values
             L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
 
+        if P.coarse_first_order:
+            for m in range(0, M):
+                L.u[m+1]=P.G_expansion(L.u[m+1],L.time + L.dt * self.coll.nodes[m] , P.omega_B)
+                L.f[m+1]=P.eval_f(L.u[m+1],L.time + L.dt * self.coll.nodes[m])
+
         # indicate presence of new values at this level
         L.status.updated = True
+
         
         return None
 

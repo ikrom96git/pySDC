@@ -189,6 +189,7 @@ class BaseTransfer(object):
         # interpolate values in space first
         tmp_u = []
         for m in range(1, SG.coll.num_nodes + 1):
+            # breakpoint()
             tmp_u.append(self.space_transfer.prolong(G.u[m] - G.uold[m]))
 
         # interpolate values in collocation

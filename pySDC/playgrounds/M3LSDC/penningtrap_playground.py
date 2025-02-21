@@ -23,7 +23,7 @@ def main():
     # initialize level parameters
     level_params = dict()
     level_params['restol'] = 1e-08
-    level_params['dt'] = 0.015625
+    level_params['dt'] = 0.00015625
 
     # initialize sweeper parameters
     sweeper_params = dict()
@@ -33,7 +33,7 @@ def main():
     # initialize problem parameters for the Penning trap
     problem_params = dict()
     problem_params['omega_E'] = 4.9
-    problem_params['omega_B'] = 25.0
+    problem_params['omega_B'] = 0.1
     problem_params['u0'] = np.array([1, 1, 1, 1, 1, 1])
     problem_params['nparts'] = 1
     problem_params['sig'] = 0.1
@@ -78,18 +78,23 @@ def main():
 
     # call main function to get things done...
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
+    sortedlist_stats = get_sorted(stats, type='residual_post_sweep', sortby='level')
+    sortedlist_array=np.array(sortedlist_stats)
+    fine_level_residual, coarse_level_residual = np.split(sortedlist_array, 2, axis=1)
+    re  
+    print(fine_level_residual)
     breakpoint()
-    sortedlist_stats = get_sorted(stats, type='etot', sortby='time')
 
-    energy = [entry[1] for entry in sortedlist_stats]
-
-    plt.figure()
-    plt.plot(energy, 'bo--')
-
-    plt.xlabel('Time')
-    plt.ylabel('Energy')
-
-    plt.savefig('penningtrap_energy.png', transparent=True, bbox_inches='tight')
+def plot_residual(x, y, labels):
+    mark=['s', 'o', '.', '*']
+    for ii in range(len(labels)):
+        plt.semilogy(x, y[:, ii], label=labels[ii], marker=mark[ii])
+    
+    plt.xlabel('Iteration')
+    plt.ylabel('Residual')
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
 
 
 if __name__ == "__main__":

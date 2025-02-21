@@ -94,6 +94,7 @@ class non_uniform_first_order(Problem):
         self.work_counters['Boris_solver'] = WorkCounter()
         self.work_counters['rhs'] = WorkCounter()
         self.coarse_zeroth_order=False
+        self.coarse_first_order=True
 
     @staticmethod
     @jit(nopython=True, nogil=True)
@@ -204,6 +205,29 @@ class non_uniform_first_order(Problem):
         R[1,2]=np.sin(theta)
         R[2,1]=-np.sin(theta)
         return R
+    
+    def RR_matrix(self, t, epsilon, s):
+        theta=(t-s)/epsilon
+        RR=np.eye(3)*np.sin(theta)
+        RR[0,0]=0.0
+        RR[1,2]=1.0-np.cos(theta)
+        RR[2,1]=np.cos(theta)-1.0
+        return RR
+
+    def E_mat(self, y):
+        c=2.0
+        return c*np.array([-y[0], y[1]/2, y[2]/2])
+    
+    def G_expansion(self, y, t, eps, s=0.0):
+        y0, u0, y1, u1=np.split(y, 4)
+        R=self.R_matrix(t, eps, s)
+        RR=self.RR_matrix(t, eps, s)
+        E=self.E_mat(y0)
+        G0=np.concatenate((y0, R@u0))
+        G1=np.concatenate((y1+RR@u0, R@u1+RR@E))
+        G=np.concatenate((G0+eps*G1, np.zeros(6)))
+        return G
+
 
     # TODO : Warning, this should be moved to u_exact(t=0) !
     def u_init(self):
@@ -250,7 +274,7 @@ class non_uniform_first_order(Problem):
         # np.copyto()
 
 
-        u=newton(self.fuct, u0, args=(dt, rhs))
+        u=newton(self.fuct, u0, args=(dt, rhs), tol=1e-14)
         me=self.dtype_u(self.init)
         np.copyto(me, u)
         

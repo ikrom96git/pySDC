@@ -92,6 +92,7 @@ class non_uniformElectric(Problem):
         self.work_counters['Boris_solver'] = WorkCounter()
         self.work_counters['rhs'] = WorkCounter()
         self.coarse_zeroth_order=False
+        self.coarse_first_order=False
 
     @staticmethod
     @jit(nopython=True, nogil=True)
@@ -178,18 +179,18 @@ class non_uniformElectric(Problem):
         Emat = c*np.diag([-1, 1/2, 1/2])
         f = self.dtype_f(self.init)
         f[0]=Y[3]
-        f[1]=0.0
-        f[2]=0.0
-        f[3]=-c*Y[0]
-        f[4]=0.0
-        f[5]=0.0
+        f[1]=Y[4]
+        f[2]=Y[5]
+        f[3]=(1/self.omega_B)*0-c*Y[0]
+        f[4]=(1/self.omega_B)*Y[5]+(c/2)*Y[1]
+        f[5]=-(1/self.omega_B)*Y[4]+(c/2)*Y[2]
         
-        f[6]=U[3]
-        f[7]=(c/2)*Y[2]
-        f[8]=(-c/2)*Y[1]
-        f[9]=-c*U[0]
-        f[10]=(-c/2)*Y[5]
-        f[11]=(c/2)*Y[4]
+        f[6]=0.0
+        f[7]=0.0
+        f[8]=0.0
+        f[9]=0.0
+        f[10]=0.0
+        f[11]=0.0
         
         return f
 
@@ -225,19 +226,20 @@ class non_uniformElectric(Problem):
         U=x[6:]
         c=2.0
         f = self.dtype_f(self.init)
+        f = self.dtype_f(self.init)
         f[0]=Y[3]
-        f[1]=0.0
-        f[2]=0.0
-        f[3]=-c*Y[0]
-        f[4]=0.0
-        f[5]=0.0
+        f[1]=Y[4]
+        f[2]=Y[5]
+        f[3]=(1/self.omega_B)*0-c*Y[0]
+        f[4]=(1/self.omega_B)*Y[5]+(c/2)*Y[1]
+        f[5]=-(1/self.omega_B)*Y[4]+(c/2)*Y[2]
         
-        f[6]=U[3]
-        f[7]=(c/2)*Y[2]
-        f[8]=(-c/2)*Y[1]
-        f[9]=-c*U[0]
-        f[10]=(-c/2)*Y[5]
-        f[11]=(c/2)*Y[4]
+        f[6]=0.0
+        f[7]=0.0
+        f[8]=0.0
+        f[9]=0.0
+        f[10]=0.0
+        f[11]=0.0
         return x-dt*f-rhs
 
     def solve_system(self, rhs, dt, u0, t):
@@ -246,7 +248,7 @@ class non_uniformElectric(Problem):
         # np.copyto()
 
 
-        u=newton(self.fuct, u0, args=(dt, rhs))
+        u=newton(self.fuct, u0, args=(dt, rhs), tol=1e-14)
         me=self.dtype_u(self.init)
         np.copyto(me, u)
         
