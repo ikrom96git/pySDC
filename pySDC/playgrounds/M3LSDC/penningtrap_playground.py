@@ -6,11 +6,14 @@ from pySDC.helpers.stats_helper import get_sorted
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.implementations.problem_classes.PenningTrap_3D import penningtrap
 from pySDC.implementations.sweeper_classes.boris_2nd_order import boris_2nd_order
-from pySDC.playgrounds.Boris.penningtrap_HookClass import particles_output
+# from pySDC.playgrounds.Boris.penningtrap_HookClass import particles_output
 from pySDC.playgrounds.M3LSDC.NonUniformElectricField import non_uniformElectricField
 from pySDC.playgrounds.M3LSDC.NonUniform_zeroth_order import non_uniform_zeroth_order
-from pSDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles
-
+from pySDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles, mesh_to_mesh
+from pySDC.playgrounds.M3LSDC.NonUniform_first_order import non_uniform_first_order
+from pySDC.implementations.sweeper_classes.generic_implicit import generic_implicit
+from pySDC.implementations.transfer_classes.TransferMesh_2_particle import mesh_to_particles
+from pySDC.playgrounds.M3LSDC.NonUniform_electric_field import non_uniformElectric
 
 def main():
     """
@@ -31,7 +34,7 @@ def main():
     problem_params = dict()
     problem_params['omega_E'] = 4.9
     problem_params['omega_B'] = 25.0
-    problem_params['u0'] = np.array([[10, 0, 0], [100, 0, 100], [1], [1]], dtype=object)
+    problem_params['u0'] = np.array([1, 1, 1, 1, 1, 1])
     problem_params['nparts'] = 1
     problem_params['sig'] = 0.1
     # problem_params['Tend'] = 16.0
@@ -48,17 +51,17 @@ def main():
 
     # initialize controller parameters
     controller_params = dict()
-    controller_params['hook_class'] = particles_output  # specialized hook class for more statistics and output
+    # controller_params['hook_class'] = particles_output  # specialized hook class for more statistics and output
     controller_params['logger_level'] = 30
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = [non_uniformElectricField, non_uniform_zeroth_order]
+    description['problem_class'] = [non_uniformElectric, non_uniform_first_order]
     description['problem_params'] = problem_params
-    description['sweeper_class'] = boris_2nd_order
+    description['sweeper_class'] = [generic_implicit, generic_implicit]
     description['sweeper_params'] = sweeper_params
     description['level_params'] = level_params
-    description['space_transfer_class'] = particles_to_particles # this is only needed for more than 2 levels
+    description['space_transfer_class'] = mesh_to_mesh # this is only needed for more than 2 levels
     description['step_params'] = step_params
     description['transfer_params'] = transfer_params
 
@@ -75,7 +78,7 @@ def main():
 
     # call main function to get things done...
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
-
+    breakpoint()
     sortedlist_stats = get_sorted(stats, type='etot', sortby='time')
 
     energy = [entry[1] for entry in sortedlist_stats]

@@ -50,7 +50,7 @@ class BaseTransfer(object):
 
         fine_grid = self.fine.sweep.coll.nodes
         coarse_grid = self.coarse.sweep.coll.nodes
-
+        
         if len(fine_grid) == len(coarse_grid):
             self.Pcoll = sp.eye(len(fine_grid)).toarray()
             self.Rcoll = sp.eye(len(fine_grid)).toarray()
@@ -96,7 +96,6 @@ class BaseTransfer(object):
 
         SF = F.sweep
         SG = G.sweep
-
         # only if the level is unlocked at least by prediction
         if not F.status.unlocked:
             raise UnlockError('fine level is still locked, cannot use data from there')
@@ -104,6 +103,7 @@ class BaseTransfer(object):
         # restrict fine values in space
         tmp_u = []
         for m in range(1, SF.coll.num_nodes + 1):
+            # breakpoint()
             tmp_u.append(self.space_transfer.restrict(F.u[m]))
 
         # restrict collocation values

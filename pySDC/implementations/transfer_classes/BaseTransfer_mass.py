@@ -32,7 +32,6 @@ class base_transfer_mass(BaseTransfer):
 
         SF = F.sweep
         SG = G.sweep
-
         # only if the level is unlocked at least by prediction
         if not F.status.unlocked:
             raise UnlockError('fine level is still locked, cannot use data from there')

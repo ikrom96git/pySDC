@@ -36,7 +36,7 @@ class generic_implicit(Sweeper):
 
         L = self.level
         P = L.prob
-
+        # breakpoint()
         me = []
 
         # integrate RHS over all collocation nodes
@@ -64,7 +64,6 @@ class generic_implicit(Sweeper):
 
         # get number of collocation nodes for easier access
         M = self.coll.num_nodes
-
         # update the MIN-SR-FLEX preconditioner
         self.updateVariableCoeffs(L.status.sweep)
 
