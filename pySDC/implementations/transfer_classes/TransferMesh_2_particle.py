@@ -3,6 +3,7 @@ from pySDC.core.space_transfer import SpaceTransfer
 from pySDC.implementations.datatype_classes.mesh import mesh, imex_mesh
 from pySDC.implementations.datatype_classes.particles import particles, fields
 
+
 class mesh_to_particles(SpaceTransfer):
     """
     Custom base_transfer class, implements Transfer.py

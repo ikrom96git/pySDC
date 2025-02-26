@@ -91,6 +91,7 @@ class penningtrap(Problem):
         self._makeAttributeAndRegister('omega_B', 'omega_E', 'u0', 'sig', localVars=locals())
         self.work_counters['Boris_solver'] = WorkCounter()
         self.work_counters['rhs'] = WorkCounter()
+        self.coarse_zeroth_order = False
 
     @staticmethod
     @jit(nopython=True, nogil=True)

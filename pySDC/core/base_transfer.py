@@ -50,7 +50,7 @@ class BaseTransfer(object):
 
         fine_grid = self.fine.sweep.coll.nodes
         coarse_grid = self.coarse.sweep.coll.nodes
-        
+
         if len(fine_grid) == len(coarse_grid):
             self.Pcoll = sp.eye(len(fine_grid)).toarray()
             self.Rcoll = sp.eye(len(fine_grid)).toarray()

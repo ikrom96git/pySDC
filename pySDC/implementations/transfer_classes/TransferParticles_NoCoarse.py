@@ -3,6 +3,7 @@ from pySDC.core.space_transfer import SpaceTransfer
 from pySDC.implementations.datatype_classes.particles import particles, fields, acceleration
 from pySDC.implementations.datatype_classes.mesh import mesh, imex_mesh
 
+
 class particles_to_particles(SpaceTransfer):
     """
     Custom transfer class, implements SpaceTransfer.py
@@ -46,6 +47,7 @@ class particles_to_particles(SpaceTransfer):
         else:
             raise TransferError("Unknown type of coarse data, got %s" % type(G))
         return F
+
 
 class mesh_to_mesh(SpaceTransfer):
     """

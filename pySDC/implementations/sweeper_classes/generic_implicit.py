@@ -100,14 +100,20 @@ class generic_implicit(Sweeper):
             L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
 
         if P.coarse_first_order:
+
             for m in range(0, M):
-                L.u[m+1]=P.G_expansion(L.u[m+1],L.time + L.dt * self.coll.nodes[m] , P.omega_B)
-                L.f[m+1]=P.eval_f(L.u[m+1],L.time + L.dt * self.coll.nodes[m])
+                # breakpoint()
+                L.u[m + 1] = P.G_expansion(L.u[m + 1], L.time + L.dt * self.coll.nodes[m], P.omega_B)
+                L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
+                # print(L.u)
+        if P.coarse_zeroth_order:
+            # breakpoint()
+            for m in range(M):
+                L.u[m + 1][3:] = P.R_matrix(L.time + L.dt * self.coll.nodes[m], 0.1, 0) @ L.u[m + 1][3:]
 
         # indicate presence of new values at this level
         L.status.updated = True
 
-        
         return None
 
     def compute_end_point(self):

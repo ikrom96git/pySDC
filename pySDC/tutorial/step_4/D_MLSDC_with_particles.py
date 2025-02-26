@@ -86,6 +86,7 @@ def run_penning_trap_simulation(mlsdc, finter=False):
     level_params = dict()
     level_params['restol'] = 1e-07
     level_params['dt'] = 1.0 / 8
+    level_params['nsweeps'] = 3
 
     # initialize sweeper parameters
     sweeper_params = dict()

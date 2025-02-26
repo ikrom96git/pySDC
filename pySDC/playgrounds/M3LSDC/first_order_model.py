@@ -40,7 +40,7 @@ def main():
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 20
+    step_params['maxiter'] = 3
 
     transfer_params = dict()
     transfer_params['finter'] = False
