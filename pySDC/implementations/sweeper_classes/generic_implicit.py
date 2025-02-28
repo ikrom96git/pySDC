@@ -102,14 +102,20 @@ class generic_implicit(Sweeper):
         if P.coarse_first_order:
 
             for m in range(0, M):
+                # if L.tau[m] is not None:
+                #     L.u[m+1] -= L.tau[m]
                 # breakpoint()
-                L.u[m + 1] = P.G_expansion(L.u[m + 1], L.time + L.dt * self.coll.nodes[m], P.omega_B)
+                L.u[m + 1] = P.G_expansion(L.u[m + 1], L.time + L.dt * self.coll.nodes[m], P.epsilon)
                 L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
-                # print(L.u)
+                
         if P.coarse_zeroth_order:
-            # breakpoint()
             for m in range(M):
-                L.u[m + 1][3:] = P.R_matrix(L.time + L.dt * self.coll.nodes[m], 0.1, 0) @ L.u[m + 1][3:]
+                # if L.tau[m] is not None:
+                #     L.u[m+1] -= L.tau[m]
+                L.u[m + 1] = P.G_expansion(L.u[m+1], L.time + L.dt * self.coll.nodes[m], P.epsilon)
+                
+                L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
+                # breakpoint()
 
         # indicate presence of new values at this level
         L.status.updated = True

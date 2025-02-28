@@ -4,21 +4,19 @@ import numpy as np
 from pySDC.helpers.stats_helper import get_sorted
 
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
-# from pySDC.implementations.problem_classes.PenningTrap_3D import penningtrap
-from pySDC.implementations.sweeper_classes.boris_2nd_order import boris_2nd_order
-# from pySDC.playgrounds.Boris.penningtrap_HookClass import particles_output
-from pySDC.playgrounds.M3LSDC.NonUniformElectricField import non_uniformElectricField
-from pySDC.playgrounds.M3LSDC.NonUniform_zeroth_order import non_uniform_zeroth_order
 from pySDC.implementations.transfer_classes.TransferParticles_NoCoarse import particles_to_particles, mesh_to_mesh
-from pySDC.playgrounds.M3LSDC.NonUniform_first_order import non_uniform_first_order
 from pySDC.implementations.sweeper_classes.generic_implicit import generic_implicit
-# from pySDC.implementations.transfer_classes.TransferMesh_2_particle import mesh_to_particles
-from pySDC.playgrounds.M3LSDC.NonUniform_electric_field import non_uniformElectric
+from pySDC.playgrounds.M3LSDC.penningtrap_playground import plot_residual
+from pySDC.playgrounds.M3LSDC.UniformElectric_field.UniformElectric_field import uniform_electric_field, uniform_electric_field_6D
+from pySDC.playgrounds.M3LSDC.UniformElectric_field.UniformElectric_field_zeroth_order_model import uniform_electric_field_zeroth_model
+from pySDC.playgrounds.M3LSDC.UniformElectric_field.UniformElectric_field_first_order import uniform_electric_field_first_order
 
-dt=0.0015625
-EPSILON=0.1
 
-def MLSDC(zeroth_order=False):
+
+dt=0.0001
+EPSILON=0.01
+
+def MLSDC_generic_implicit(zeroth_order=False):
     """
     Particle cloud in a penning trap, incl. live visualization
 
@@ -27,26 +25,23 @@ def MLSDC(zeroth_order=False):
     level_params = dict()
     level_params['restol'] = -1
     level_params['dt'] = dt
-    level_params['nsweeps']= 1
+    # level_params['nsweeps']= [1, 1]
     
 
     # initialize sweeper parameters
     sweeper_params = dict()
     sweeper_params['quad_type'] = 'GAUSS'
-    sweeper_params['num_nodes'] = [5, 3]
+    sweeper_params['num_nodes'] = [5, 5]
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
-    problem_params['omega_E'] = 4.9
-    problem_params['omega_B'] = EPSILON
-    problem_params['u0'] = np.array([[1,1,1], [1,1,1], [1], [1]], dtype=object)
-    problem_params['nparts'] = 1
-    problem_params['sig'] = 0.1
+    problem_params['epsilon'] = EPSILON
+    problem_params['u0'] = np.array([1,1,1,1,1,1])
     # problem_params['Tend'] = 16.0
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 20
+    step_params['maxiter'] = 10
 
     transfer_params = dict()
     transfer_params['finter'] = False
@@ -62,16 +57,15 @@ def MLSDC(zeroth_order=False):
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = [non_uniformElectricField, non_uniformElectricField]
+    description['problem_class'] = [uniform_electric_field, uniform_electric_field]
     if zeroth_order:
-        description['problem_class'] = [non_uniformElectricField, non_uniform_zeroth_order]
-            
+        description['problem_class'] = [uniform_electric_field, uniform_electric_field_zeroth_model]
     
     description['problem_params'] = problem_params
-    description['sweeper_class'] = [boris_2nd_order, boris_2nd_order]
+    description['sweeper_class'] = [generic_implicit, generic_implicit]
     description['sweeper_params'] = sweeper_params
     description['level_params'] = level_params
-    description['space_transfer_class'] = particles_to_particles # this is only needed for more than 2 levels
+    description['space_transfer_class'] = mesh_to_mesh # this is only needed for more than 2 levels
     description['step_params'] = step_params
     description['transfer_params'] = transfer_params
 
@@ -92,11 +86,10 @@ def MLSDC(zeroth_order=False):
     sortedlist_array=np.array(sortedlist_stats)
     fine_level, coarse_level=np.split(sortedlist_array, 2)
     residual=fine_level[:, 1]
-    time=np.linspace(t0, Tend, len(residual))
+    # time=np.linspace(t0, Tend, len(residual))
+    Iteration=np.arange(0, step_params['maxiter'], 1)
     # breakpoint()
-    return residual, time
-
-
+    return residual, Iteration
 
 def first_order_model():
     """
@@ -105,29 +98,29 @@ def first_order_model():
     """
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1e-08
+    level_params['restol'] = -1
     level_params['dt'] = dt
+    # level_params['nsweeps']= [1, 1]
+    
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['quad_type'] = 'LOBATTO'
-    sweeper_params['num_nodes'] = [5, 3]
+    sweeper_params['quad_type'] = 'GAUSS'
+    sweeper_params['num_nodes'] = [5, 5]
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
-    problem_params['omega_E'] = 4.9
-    problem_params['omega_B'] = EPSILON
-    problem_params['u0'] = np.array([1, 1, 1, 1, 1, 1])
-    problem_params['nparts'] = 1
-    problem_params['sig'] = 0.1
+    problem_params['epsilon'] = EPSILON
+    problem_params['u0'] = np.array([1.0,1.0,1.0,1.0,1.0,1.0, 0.0,0.0, 0.0, .0, 0.0 ,0.0])
     # problem_params['Tend'] = 16.0
 
     # initialize step parameters
     step_params = dict()
-    step_params['maxiter'] = 20
+    step_params['maxiter'] = 10
 
     transfer_params = dict()
     transfer_params['finter'] = False
+
 
 
 
@@ -139,7 +132,8 @@ def first_order_model():
 
     # Fill description dictionary for easy hierarchy creation
     description = dict()
-    description['problem_class'] = [non_uniformElectric, non_uniform_first_order]
+    description['problem_class'] = [uniform_electric_field_6D, uniform_electric_field_first_order]
+    
     description['problem_params'] = problem_params
     description['sweeper_class'] = [generic_implicit, generic_implicit]
     description['sweeper_params'] = sweeper_params
@@ -166,34 +160,16 @@ def first_order_model():
     fine_level, coarse_level=np.split(sortedlist_array, 2)
     residual=fine_level[:, 1]
     time=np.linspace(t0, Tend, len(residual))
-    return residual, time
-    # plt.semilogy(time, residual, label='M3LSDC')
-    # plt.legend()
-    # plt.tight_layout()
-    # plt.show()    
+    Iteration=np.arange(0,step_params['maxiter'], 1)
+
     # breakpoint()
+    return residual, Iteration
 
-
-def plot_residual(x, y, labels):
-    mark=['s', 'o', '.', '*']
-    for ii in range(len(labels)):
-        plt.semilogy(x, y[ii], label=labels[ii], marker=mark[ii])
-    
-    plt.xlabel('Iteration')
-    plt.ylabel('Residual')
-    plt.title("Injection Restriction Operator for M3LSDC")
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
-
-
-if __name__ == "__main__":
-    # main()
-    mlsdc_residual, time=MLSDC()
-    m3lsdc_residual0, time=MLSDC(zeroth_order=True)
-    m3lsdc_residual1, time=first_order_model()
-    residual_set=[mlsdc_residual, m3lsdc_residual0, m3lsdc_residual1]
+if __name__=='__main__':
+    mlsdc_residual, Iteration=MLSDC_generic_implicit()
+    m3lsdc_residual0, Iteration=MLSDC_generic_implicit(zeroth_order=True)
+    m3lsdc_residual1, Iteration=first_order_model()
+    Residual=[mlsdc_residual, m3lsdc_residual0, m3lsdc_residual1]
+    # breakpoint()
     labels=['MLSDC', r'M3LSDC $\mathcal{O}(\varepsilon^{0})$', r'M3LSDC $\mathcal{O}(\varepsilon^{1})$']
-    # breakpoint()
-    plot_residual(time, residual_set, labels)
-
+    plot_residual(Iteration, Residual, labels)
