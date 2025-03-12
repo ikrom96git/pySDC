@@ -96,6 +96,7 @@ class BaseTransfer(object):
 
         SF = F.sweep
         SG = G.sweep
+
         # only if the level is unlocked at least by prediction
         if not F.status.unlocked:
             raise UnlockError('fine level is still locked, cannot use data from there')
@@ -103,7 +104,6 @@ class BaseTransfer(object):
         # restrict fine values in space
         tmp_u = []
         for m in range(1, SF.coll.num_nodes + 1):
-            # breakpoint()
             tmp_u.append(self.space_transfer.restrict(F.u[m]))
 
         # restrict collocation values
@@ -185,11 +185,19 @@ class BaseTransfer(object):
             raise UnlockError('coarse level is still locked, cannot use data from there')
 
         # build coarse correction
-
+        if G.prob.first_order:
+            for m in range(1, SG.coll.num_nodes + 1):
+                # if L.tau[m] is not None:
+                #     L.u[m] += L.tau[m]
+                u0=G.u[m][:2]
+                u1=G.u[m][2:]
+                G.u[m][:2]=u0+G.prob.epsilon*u1
+                G.u[m][2:]=u0*0.0
+                
+                
         # interpolate values in space first
         tmp_u = []
         for m in range(1, SG.coll.num_nodes + 1):
-            # breakpoint()
             tmp_u.append(self.space_transfer.prolong(G.u[m] - G.uold[m]))
 
         # interpolate values in collocation
@@ -223,7 +231,21 @@ class BaseTransfer(object):
             raise UnlockError('coarse level is still locked, cannot use data from there')
 
         # build coarse correction
+        if G.prob.first_order:
+            for m in range(1, SG.coll.num_nodes + 1):
+                # if L.tau[m] is not None:
+                #     L.u[m] += L.tau[m]
+                u0=G.u[m][:2]
+                u1=G.u[m][2:]
+                G.u[m][:2]=u0+G.epsilon*u1
+                G.u[m+1][2:]=u0*0.0
 
+                f0=G.f[m][:2]
+                f1=G.f[m][2:]
+                
+                G.f[m][:2]=f0+G.prob.epsilon*f1
+                G.f[m][2:]=f0*0.0
+                breakpoint()
         # interpolate values in space first
         tmp_u = []
         tmp_f = []

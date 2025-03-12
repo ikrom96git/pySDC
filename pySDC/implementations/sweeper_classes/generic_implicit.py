@@ -36,7 +36,7 @@ class generic_implicit(Sweeper):
 
         L = self.level
         P = L.prob
-        # breakpoint()
+
         me = []
 
         # integrate RHS over all collocation nodes
@@ -64,6 +64,7 @@ class generic_implicit(Sweeper):
 
         # get number of collocation nodes for easier access
         M = self.coll.num_nodes
+
         # update the MIN-SR-FLEX preconditioner
         self.updateVariableCoeffs(L.status.sweep)
 
@@ -99,25 +100,16 @@ class generic_implicit(Sweeper):
             # update function values
             L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
 
-        if P.coarse_first_order:
-
-            for m in range(0, M):
-                # if L.tau[m] is not None:
-                #     L.u[m+1] -= L.tau[m]
-                # breakpoint()
-                L.u[m + 1] = P.G_expansion(L.u[m + 1], L.time + L.dt * self.coll.nodes[m], P.epsilon)
-                L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
-                
-        if P.coarse_zeroth_order:
+        # indicate presence of new values at this level
+        if P.first_order:
             for m in range(M):
                 # if L.tau[m] is not None:
-                #     L.u[m+1] -= L.tau[m]
-                L.u[m + 1] = P.G_expansion(L.u[m+1], L.time + L.dt * self.coll.nodes[m], P.epsilon)
-                
-                L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
+                #     L.u[m] += L.tau[m]
+                u0=L.u[m+1][:2]
+                u1=L.u[m+1][2:]
+                L.u[m+1][:2]=u0+P.epsilon*u1
+                L.u[m+1][2:]=u0*0.0
                 # breakpoint()
-
-        # indicate presence of new values at this level
         L.status.updated = True
 
         return None

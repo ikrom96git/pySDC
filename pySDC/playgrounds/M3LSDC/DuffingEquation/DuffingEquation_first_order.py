@@ -1,47 +1,60 @@
 import numpy as np
-from scipy.optimize import newton 
 
-from pySDC.core.errors import ProblemError
-from pySDC.core.problem import Problem, WorkCounter
+from pySDC.core.Errors import ProblemError
+from pySDC.core.Problem import ptype, WorkCounter
 from pySDC.implementations.datatype_classes.mesh import mesh
 
 
 # noinspection PyUnusedLocal
-class vanderpol(Problem):
-   
+class duffingequation_first_order(ptype):
+    r"""
+    This class implements the stiff Van der Pol oscillator given by the equation
+
+    .. math::
+        \frac{d^2 u(t)}{d t^2} - \mu (1 - u(t)^2) \frac{d u(t)}{dt} + u(t) = 0.
+
+    Parameters
+    ----------
+    u0 : sequence of array_like, optional
+        Initial condition.
+    mu : float, optional
+        Stiff parameter :math:`\mu`.
+    newton_maxiter : int, optional
+        Maximum number of iterations for Newton's method to terminate.
+    newton_tol : float, optional
+        Tolerance for Newton to terminate.
+    stop_at_nan : bool, optional
+        Indicate whether Newton's method should stop if ``nan`` values arise.
+    crash_at_maxiter : bool, optional
+        Indicates whether Newton's method should stop if maximum number of iterations
+        ``newton_maxiter`` is reached.
+
+    Attributes
+    ----------
+    work_counters : WorkCounter
+        Counts different things, here: Number of evaluations of the right-hand side in ``eval_f``
+        and number of Newton calls in each Newton iterations are counted.
+    """
 
     dtype_u = mesh
     dtype_f = mesh
 
-    def __init__(
-        self,
-        u0=None,
-        omega=1.0,
-        epsilon=0.1,
-        b=1.0,
-        stop_at_nan=True,
-        crash_at_maxiter=True,
-        relative_tolerance=False,
-    ):
+    def __init__(self, u0=None, omega=1.0, b=1.0, epsilon=0.1):
         """Initialization routine"""
-        nvars = 2
+        nvars = 4
 
         if u0 is None:
-            u0 = [2.0, 0.0]
+            u0 = [2.0, 0.0, 0.0, 0.0]
 
         super().__init__((nvars, None, np.dtype('float64')))
-        self._makeAttributeAndRegister('u0', 'omega', 'epsilon', 'b', localVars=locals(), readOnly=True)
+        self._makeAttributeAndRegister('nvars', 'u0', localVars=locals(), readOnly=True)
         self._makeAttributeAndRegister(
-            'mu',
-            'newton_maxiter',
-            'newton_tol',
-            'stop_at_nan',
-            'crash_at_maxiter',
-            'relative_tolerance',
-            localVars=locals(),
+            'omega', 'b', 'epsilon', localVars=locals()
         )
         self.work_counters['newton'] = WorkCounter()
         self.work_counters['rhs'] = WorkCounter()
+        self.zeroth_order=False
+        self.first_order=True
 
     def u_exact(self, t, u_init=None, t_init=None):
         r"""
@@ -73,6 +86,13 @@ class vanderpol(Problem):
         else:
             me[:] = self.u0
         return me
+    def u_init(self):
+        u=self.dtype_u(self.init)
+        u[0]=self.u0[0]
+        u[1]=self.u0[1]
+        u[2]=0.0
+        u[3]=0.0
+        return u
 
     def eval_f(self, u, t):
         """
@@ -93,18 +113,24 @@ class vanderpol(Problem):
 
         x1 = u[0]
         x2 = u[1]
+        x3=u[2]
+        x4=u[3]
         f = self.f_init
         f[0] = x2
-        f[1] = -self.omega**2 * x1 - self.epsilon*self.b*x1**3
+        f[1] = -self.omega**2*x1
+        f[2]=x4
+        f[3]=-self.omega**2*x3-self.b*x1**3
         self.work_counters['rhs']()
         return f
 
-    def right_hand_side(self, u, rhs, dt, u0, t):
-        x1=u[0]
-        x2=u[1]
-        f[0]=x2
-        f[1]=-self.omega**2*x1-self.epsilon*self.b*x1**3
-        return f
+    def right_hand_side(self, x, rhs, dt):
+        f0=x[1]
+        f1 = -self.omega**2*x[0]
+        f2=x[3]
+        f3=-self.omega**2*x[2]-self.b*x[1]**3
+        return x-dt*np.array([f0, f1, f2, f3])-rhs
+        
+        
 
     def solve_system(self, rhs, dt, u0, t):
         """
@@ -127,14 +153,18 @@ class vanderpol(Problem):
             The solution u.
         """
 
-        mu = self.mu
+        omega = self.omega
 
         # create new mesh object from u0 and set initial values for iteration
         u = self.dtype_u(u0)
-        x1 = u[0]
-        x2 = u[1]
-        root=newton(self.right_hand_side, args=(rhs, dt, u0, t))
-        np.copyto(u, root)
         
-        return u
+        # start newton iteration
+        from scipy.optimize import newton
 
+        u_newton=newton(self.right_hand_side, x0=u0, args=(rhs, dt), tol=1e-14)
+
+        np.copyto(u, u_newton)
+
+
+
+        return u
