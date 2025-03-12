@@ -96,6 +96,15 @@ class generic_implicit(sweeper):
             L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
 
         # indicate presence of new values at this level
+        if P.first_order:
+            for m in range(M):
+                # if L.tau[m] is not None:
+                #     L.u[m] += L.tau[m]
+                u0=L.u[m+1][:2]
+                u1=L.u[m+1][2:]
+                L.u[m+1][:2]=u0+P.epsilon*u1
+                L.u[m+1][2:]=u0*0.0
+                # breakpoint()
         L.status.updated = True
 
         return None

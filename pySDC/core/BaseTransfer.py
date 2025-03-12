@@ -186,7 +186,16 @@ class base_transfer(object):
             raise UnlockError('coarse level is still locked, cannot use data from there')
 
         # build coarse correction
-
+        if G.prob.first_order:
+            for m in range(1, SG.coll.num_nodes + 1):
+                # if L.tau[m] is not None:
+                #     L.u[m] += L.tau[m]
+                u0=G.u[m][:2]
+                u1=G.u[m][2:]
+                G.u[m][:2]=u0+G.prob.epsilon*u1
+                G.u[m][2:]=u0*0.0
+                
+                
         # interpolate values in space first
         tmp_u = []
         for m in range(1, SG.coll.num_nodes + 1):
@@ -223,7 +232,21 @@ class base_transfer(object):
             raise UnlockError('coarse level is still locked, cannot use data from there')
 
         # build coarse correction
+        if G.prob.first_order:
+            for m in range(1, SG.coll.num_nodes + 1):
+                # if L.tau[m] is not None:
+                #     L.u[m] += L.tau[m]
+                u0=G.u[m][:2]
+                u1=G.u[m][2:]
+                G.u[m][:2]=u0+G.epsilon*u1
+                G.u[m+1][2:]=u0*0.0
 
+                f0=G.f[m][:2]
+                f1=G.f[m][2:]
+                
+                G.f[m][:2]=f0+G.prob.epsilon*f1
+                G.f[m][2:]=f0*0.0
+                breakpoint()
         # interpolate values in space first
         tmp_u = []
         tmp_f = []

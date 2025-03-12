@@ -106,7 +106,7 @@ class base_transfer_mass(base_transfer):
 
         # works as a predictor
         G.status.unlocked = True
-
+        
         return None
 
     def prolong(self):
@@ -131,7 +131,7 @@ class base_transfer_mass(base_transfer):
             raise UnlockError('coarse level is still locked, cannot use data from there')
 
         # build coarse correction
-
+        
         # interpolate values in space first
         tmp_u = []
         for m in range(1, SG.coll.num_nodes + 1):
@@ -170,7 +170,7 @@ class base_transfer_mass(base_transfer):
             raise UnlockError('coarse level is still locked, cannot use data from there')
 
         # build coarse correction
-
+        
         # interpolate values in space first
         tmp_u = []
         tmp_f = []
