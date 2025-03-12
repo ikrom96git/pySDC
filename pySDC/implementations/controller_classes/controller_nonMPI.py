@@ -69,7 +69,6 @@ class controller_nonMPI(Controller):
         for nl in range(self.nlevels):
             if all(S.levels[nl].params.nsweeps == self.MS[0].levels[nl].params.nsweeps for S in self.MS):
                 self.nsweeps.append(self.MS[0].levels[nl].params.nsweeps)
-
         # if self.nlevels > 1 and self.nsweeps[-1] > 1:
         #     raise ControllerError('this controller cannot do multiple sweeps on coarsest level')
 
@@ -376,50 +375,50 @@ class controller_nonMPI(Controller):
             for S in local_MS_running:
                 S.levels[0].sweep.update_nodes()
 
-        # elif self.params.predict_type == 'libpfasst_style':
-        #
-        #     # loop over all steps
-        #     for S in local_MS_running:
-        #
-        #         # restrict to coarsest level
-        #         for l in range(1, len(S.levels)):
-        #             S.transfer(source=S.levels[l - 1], target=S.levels[l])
-        #
-        #     # run in serial on coarse level
-        #     for S in local_MS_running:
-        #
-        #         self.hooks.pre_comm(step=S, level_number=len(S.levels) - 1)
-        #         # receive from previous step (if not first)
-        #         if not S.status.first:
-        #             self.logger.debug('Process %2i receives from %2i on level %2i with tag %s -- PREDICT' %
-        #                               (S.status.slot, S.prev.status.slot, len(S.levels) - 1, 0))
-        #             self.recv(S.levels[-1], S.prev.levels[-1], tag=(len(S.levels), 0, S.prev.status.slot))
-        #         self.hooks.post_comm(step=S, level_number=len(S.levels) - 1)
-        #
-        #         # do the coarse sweep
-        #         S.levels[-1].sweep.update_nodes()
-        #
-        #         self.hooks.pre_comm(step=S, level_number=len(S.levels) - 1)
-        #         # send to succ step
-        #         if not S.status.last:
-        #             self.logger.debug('Process %2i provides data on level %2i with tag %s -- PREDICT'
-        #                               % (S.status.slot, len(S.levels) - 1, 0))
-        #             self.send(S.levels[-1], tag=(len(S.levels), 0, S.status.slot))
-        #         self.hooks.post_comm(step=S, level_number=len(S.levels) - 1, add_to_stats=True)
-        #
-        #     # go back to fine level, sweeping
-        #     for l in range(self.nlevels - 1, 0, -1):
-        #
-        #         for S in local_MS_running:
-        #             # prolong values
-        #             S.transfer(source=S.levels[l], target=S.levels[l - 1])
-        #
-        #             if l - 1 > 0:
-        #                 S.levels[l - 1].sweep.update_nodes()
-        #
-        #     # end with a fine sweep
-        #     for S in local_MS_running:
-        #         S.levels[0].sweep.update_nodes()
+        elif self.params.predict_type == 'libpfasst_style':
+        
+            # loop over all steps
+            for S in local_MS_running:
+        
+                # restrict to coarsest level
+                for l in range(1, len(S.levels)):
+                    S.transfer(source=S.levels[l - 1], target=S.levels[l])
+        
+            # run in serial on coarse level
+            for S in local_MS_running:
+        
+                self.hooks.pre_comm(step=S, level_number=len(S.levels) - 1)
+                # receive from previous step (if not first)
+                if not S.status.first:
+                    self.logger.debug('Process %2i receives from %2i on level %2i with tag %s -- PREDICT' %
+                                      (S.status.slot, S.prev.status.slot, len(S.levels) - 1, 0))
+                    self.recv(S.levels[-1], S.prev.levels[-1], tag=(len(S.levels), 0, S.prev.status.slot))
+                self.hooks.post_comm(step=S, level_number=len(S.levels) - 1)
+        
+                # do the coarse sweep
+                S.levels[-1].sweep.update_nodes()
+        
+                self.hooks.pre_comm(step=S, level_number=len(S.levels) - 1)
+                # send to succ step
+                if not S.status.last:
+                    self.logger.debug('Process %2i provides data on level %2i with tag %s -- PREDICT'
+                                      % (S.status.slot, len(S.levels) - 1, 0))
+                    self.send(S.levels[-1], tag=(len(S.levels), 0, S.status.slot))
+                self.hooks.post_comm(step=S, level_number=len(S.levels) - 1, add_to_stats=True)
+        
+            # go back to fine level, sweeping
+            for l in range(self.nlevels - 1, 0, -1):
+        
+                for S in local_MS_running:
+                    # prolong values
+                    S.transfer(source=S.levels[l], target=S.levels[l - 1])
+        
+                    if l - 1 > 0:
+                        S.levels[l - 1].sweep.update_nodes()
+        
+            # end with a fine sweep
+            for S in local_MS_running:
+                S.levels[0].sweep.update_nodes()
 
         elif self.params.predict_type == 'pfasst_burnin':
             # loop over all steps
@@ -620,27 +619,27 @@ class controller_nonMPI(Controller):
         Args:
             local_MS_running (list): list of currently running steps
         """
+        for _ in range(self.nsweeps[1]):
+            for S in local_MS_running:
+                # receive from previous step (if not first)
+                self.recv_full(S, level=len(S.levels) - 1)
 
-        for S in local_MS_running:
-            # receive from previous step (if not first)
-            self.recv_full(S, level=len(S.levels) - 1)
+                # do the sweep
+                for hook in self.hooks:
+                    hook.pre_sweep(step=S, level_number=len(S.levels) - 1)
+                S.levels[-1].sweep.update_nodes()
+                S.levels[-1].sweep.compute_residual(stage='IT_COARSE')
+                for hook in self.hooks:
+                    hook.post_sweep(step=S, level_number=len(S.levels) - 1)
 
-            # do the sweep
-            for hook in self.hooks:
-                hook.pre_sweep(step=S, level_number=len(S.levels) - 1)
-            S.levels[-1].sweep.update_nodes()
-            S.levels[-1].sweep.compute_residual(stage='IT_COARSE')
-            for hook in self.hooks:
-                hook.post_sweep(step=S, level_number=len(S.levels) - 1)
+                # send to succ step
+                self.send_full(S, level=len(S.levels) - 1, add_to_stats=True)
 
-            # send to succ step
-            self.send_full(S, level=len(S.levels) - 1, add_to_stats=True)
-
-            # update stage
-            if len(S.levels) > 1:  # MLSDC or PFASST
-                S.status.stage = 'IT_UP'
-            else:  # MSSDC
-                S.status.stage = 'IT_CHECK'
+                # update stage
+                if len(S.levels) > 1:  # MLSDC or PFASST
+                    S.status.stage = 'IT_UP'
+                else:  # MSSDC
+                    S.status.stage = 'IT_CHECK'
 
     def it_up(self, local_MS_running):
         """

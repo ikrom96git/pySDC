@@ -131,6 +131,7 @@ class BaseTransfer(object):
 
         # restrict fine level tau correction part in collocation
         tauFG = []
+        
         for n in range(1, SG.coll.num_nodes + 1):
             tauFG.append(self.Rcoll[n - 1, 0] * tmp_tau[0])
             for m in range(1, SF.coll.num_nodes):
@@ -138,6 +139,9 @@ class BaseTransfer(object):
 
         # build tau correction
         for m in range(SG.coll.num_nodes):
+            u0=PG.u_init()
+            u0[: 2]=tauFG[m]
+            tauFG[m]=u0
             G.tau[m] = tauFG[m] - tauG[m]
 
         if F.tau[0] is not None:
@@ -186,19 +190,18 @@ class BaseTransfer(object):
 
         # build coarse correction
         if G.prob.first_order:
-            for m in range(1, SG.coll.num_nodes + 1):
-                # if L.tau[m] is not None:
-                #     L.u[m] += L.tau[m]
+            for m in range(1, SG.coll.num_nodes+1):
+                # if G.tau[m-1] is not None:
+                #     G.u[m] -= G.tau[m-1]
                 u0=G.u[m][:2]
                 u1=G.u[m][2:]
                 G.u[m][:2]=u0+G.prob.epsilon*u1
                 G.u[m][2:]=u0*0.0
                 
-                
         # interpolate values in space first
         tmp_u = []
         for m in range(1, SG.coll.num_nodes + 1):
-            tmp_u.append(self.space_transfer.prolong(G.u[m] - G.uold[m]))
+            tmp_u.append(self.space_transfer.prolong(G.u[m][:2] - G.uold[m]))
 
         # interpolate values in collocation
         for n in range(1, SF.coll.num_nodes + 1):

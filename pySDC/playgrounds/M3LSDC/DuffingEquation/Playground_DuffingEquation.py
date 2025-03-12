@@ -25,11 +25,12 @@ def MLSDC_duffing_equation(zeroth_order=False):
     level_params = dict()
     level_params['restol'] = -1
     level_params['dt'] = dt
+    level_params['nsweeps']=[5,1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
     sweeper_params['quad_type'] = 'GAUSS'
-    sweeper_params['num_nodes'] = [5,3]
+    sweeper_params['num_nodes'] = [5,5]
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
@@ -95,18 +96,19 @@ def M3LSDC_first_order():
     level_params = dict()
     level_params['restol'] = -1
     level_params['dt'] = dt
+    level_params['nsweeps']=[1 ,5]
 
     # initialize sweeper parameters
     sweeper_params = dict()
     sweeper_params['quad_type'] = 'GAUSS'
-    sweeper_params['num_nodes'] = [5,3]
+    sweeper_params['num_nodes'] = [5,5]
 
     # initialize problem parameters for the Penning trap
     problem_params = dict()
     problem_params['omega'] = 1.0  # E-field frequency
     problem_params['b'] = 1.0  # B-field frequency
     problem_params['epsilon']=EPSILON
-    problem_params['u0'] = np.array([2.0, 0.0, 0.0, 0.0])  # initial center of positions
+    # problem_params['u0'] = np.array([2.0, 0.0, 0.0, 0.0])  # initial center of positions
     
     # initialize step parameters
     step_params = dict()
@@ -123,7 +125,7 @@ def M3LSDC_first_order():
     # Fill description dictionary for easy hierarchy creation
     description = dict()
         # MLSDC: provide list of two problem classes: one for the fine, one for the coarse level
-    description['problem_class'] = [duffingequation_D4, duffingequation_first_order]
+    description['problem_class'] = [duffingequation, duffingequation_first_order]
     description['problem_params'] = problem_params
     description['sweeper_class'] = generic_implicit
     description['sweeper_params'] = sweeper_params

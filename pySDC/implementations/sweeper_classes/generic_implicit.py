@@ -70,7 +70,8 @@ class generic_implicit(Sweeper):
 
         # gather all terms which are known already (e.g. from the previous iteration)
         # this corresponds to u0 + QF(u^k) - QdF(u^k) + tau
-
+        for m in range(0, M):
+            L.u[m]=L.prob.u_init()
         # get QF(u^k)
         integral = self.integrate()
         for m in range(M):
@@ -79,6 +80,7 @@ class generic_implicit(Sweeper):
                 integral[m] -= L.dt * self.QI[m + 1, j] * L.f[j]
 
             # add initial value
+            # breakpoint()
             integral[m] += L.u[0]
             # add tau if associated
             if L.tau[m] is not None:
@@ -101,17 +103,9 @@ class generic_implicit(Sweeper):
             L.f[m + 1] = P.eval_f(L.u[m + 1], L.time + L.dt * self.coll.nodes[m])
 
         # indicate presence of new values at this level
-        if P.first_order:
-            for m in range(M):
-                # if L.tau[m] is not None:
-                #     L.u[m] += L.tau[m]
-                u0=L.u[m+1][:2]
-                u1=L.u[m+1][2:]
-                L.u[m+1][:2]=u0+P.epsilon*u1
-                L.u[m+1][2:]=u0*0.0
-                # breakpoint()
+       
         L.status.updated = True
-
+        print(L.prob.name)
         return None
 
     def compute_end_point(self):

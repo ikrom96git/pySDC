@@ -1,12 +1,12 @@
 import numpy as np
 
-from pySDC.core.Errors import ProblemError
-from pySDC.core.Problem import ptype, WorkCounter
+from pySDC.core.errors import ProblemError
+from pySDC.core.problem import Problem, WorkCounter
 from pySDC.implementations.datatype_classes.mesh import mesh
 
 
 # noinspection PyUnusedLocal
-class duffingequation_first_order(ptype):
+class duffingequation_first_order(Problem):
     r"""
     This class implements the stiff Van der Pol oscillator given by the equation
 
@@ -55,6 +55,7 @@ class duffingequation_first_order(ptype):
         self.work_counters['rhs'] = WorkCounter()
         self.zeroth_order=False
         self.first_order=True
+        self.name='Duffing equation first order model'
 
     def u_exact(self, t, u_init=None, t_init=None):
         r"""
@@ -90,8 +91,12 @@ class duffingequation_first_order(ptype):
         u=self.dtype_u(self.init)
         u[0]=self.u0[0]
         u[1]=self.u0[1]
-        u[2]=0.0
-        u[3]=0.0
+        if len(u)==2:
+            u[2]=0.0
+            u[3]=0.0
+        else:
+            u[2]=self.u0[2]
+            u[3]=self.u0[3]
         return u
 
     def eval_f(self, u, t):
@@ -110,11 +115,14 @@ class duffingequation_first_order(ptype):
         f : dtype_f
             The right-hand side (contains 2 components).
         """
-
         x1 = u[0]
         x2 = u[1]
-        x3=u[2]
-        x4=u[3]
+        if len(u==2):
+            x3=0.0
+            x4=0.0
+        else:
+            x3=u[2]
+            x4=u[3]
         f = self.f_init
         f[0] = x2
         f[1] = -self.omega**2*x1
@@ -154,13 +162,13 @@ class duffingequation_first_order(ptype):
         """
 
         omega = self.omega
-
+        u0=self.u_init()
         # create new mesh object from u0 and set initial values for iteration
         u = self.dtype_u(u0)
         
         # start newton iteration
         from scipy.optimize import newton
-
+        # breakpoint()
         u_newton=newton(self.right_hand_side, x0=u0, args=(rhs, dt), tol=1e-14)
 
         np.copyto(u, u_newton)

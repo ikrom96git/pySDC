@@ -1,12 +1,12 @@
 import numpy as np
 
-from pySDC.core.Errors import ProblemError
-from pySDC.core.Problem import ptype, WorkCounter
+from pySDC.core.errors import ProblemError
+from pySDC.core.problem import Problem, WorkCounter
 from pySDC.implementations.datatype_classes.mesh import mesh
 
 
 # noinspection PyUnusedLocal
-class duffingequation_zeroth_order(ptype):
+class duffingequation_zeroth_order(Problem):
     r"""
     This class implements the stiff Van der Pol oscillator given by the equation
 
@@ -53,6 +53,7 @@ class duffingequation_zeroth_order(ptype):
         )
         self.work_counters['newton'] = WorkCounter()
         self.work_counters['rhs'] = WorkCounter()
+        self.name='Duffing equation zeroth order model'
         self.zeroth_order=True
         self.first_order=False
 
