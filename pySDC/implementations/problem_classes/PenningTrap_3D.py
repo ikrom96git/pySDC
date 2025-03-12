@@ -87,8 +87,10 @@ class penningtrap(ptype):
     def __init__(self, omega_B, omega_E, u0, nparts, sig):
         # invoke super init, passing nparts, dtype_u and dtype_f
         super().__init__(((3, nparts), None, np.dtype('float64')))
-        self._makeAttributeAndRegister('nparts', localVars=locals(), readOnly=True)
-        self._makeAttributeAndRegister('omega_B', 'omega_E', 'u0', 'sig', localVars=locals())
+        self._makeAttributeAndRegister(
+            'nparts', localVars=locals(), readOnly=True)
+        self._makeAttributeAndRegister(
+            'omega_B', 'omega_E', 'u0', 'sig', localVars=locals())
         self.work_counters['Boris_solver'] = WorkCounter()
         self.work_counters['rhs'] = WorkCounter()
 
@@ -176,16 +178,18 @@ class penningtrap(ptype):
         self.work_counters['rhs']()
         try:
             penningtrap.Harmonic_oscillator
-            Emat = np.diag([0, 0, -1])
+
+            print('Harmonic_oscillator')
         except AttributeError:
             Emat = np.diag([-1, 1/2, 1/2])
 
         f = self.dtype_f(self.init)
-
+        Emat = np.diag([0, 0, -1])
         f.elec[:] = self.get_interactions(part)
 
         for n in range(N):
-            f.elec[:, n] += self.omega_E**2 / (part.q[n] / part.m[n]) * np.dot(Emat, part.pos[:, n])
+            f.elec[:, n] += self.omega_E**2 / \
+                (part.q[n] / part.m[n]) * np.dot(Emat, part.pos[:, n])
             f.magn[:, n] = self.omega_B * np.array([1, 0, 0])
 
         return f
@@ -281,8 +285,10 @@ class penningtrap(ptype):
         wbar = np.sqrt(2) * wE
 
         # position and velocity in z direction is easy to compute
-        u.pos[2, 0] = u0[0][2] * np.cos(wbar * t) + u0[1][2] / wbar * np.sin(wbar * t)
-        u.vel[2, 0] = -u0[0][2] * wbar * np.sin(wbar * t) + u0[1][2] * np.cos(wbar * t)
+        u.pos[2, 0] = u0[0][2] * \
+            np.cos(wbar * t) + u0[1][2] / wbar * np.sin(wbar * t)
+        u.vel[2, 0] = -u0[0][2] * wbar * \
+            np.sin(wbar * t) + u0[1][2] * np.cos(wbar * t)
 
         # define temp. variables to compute complex position
         Op = 1 / 2 * (wB + np.sqrt(wB**2 - 4 * wE**2))
@@ -293,9 +299,11 @@ class penningtrap(ptype):
         Ip = u0[0][1] - Im
 
         # compute position in complex notation
-        w = (Rp + Ip * 1j) * np.exp(-Op * t * 1j) + (Rm + Im * 1j) * np.exp(-Om * t * 1j)
+        w = (Rp + Ip * 1j) * np.exp(-Op * t * 1j) + \
+            (Rm + Im * 1j) * np.exp(-Om * t * 1j)
         # compute velocity as time derivative of the position
-        dw = -1j * Op * (Rp + Ip * 1j) * np.exp(-Op * t * 1j) - 1j * Om * (Rm + Im * 1j) * np.exp(-Om * t * 1j)
+        dw = -1j * Op * (Rp + Ip * 1j) * np.exp(-Op * t * 1j) - \
+            1j * Om * (Rm + Im * 1j) * np.exp(-Om * t * 1j)
 
         # get the appropriate real and imaginary parts
         u.pos[0, 0] = w.real
@@ -325,13 +333,15 @@ class penningtrap(ptype):
         """
 
         if not isinstance(part, particles):
-            raise ProblemError('something is wrong during build_f, got %s' % type(part))
+            raise ProblemError(
+                'something is wrong during build_f, got %s' % type(part))
 
         N = self.nparts
 
         rhs = acceleration(self.init)
         for n in range(N):
-            rhs[:, n] = part.q[n] / part.m[n] * (f.elec[:, n] + np.cross(part.vel[:, n], f.magn[:, n]))
+            rhs[:, n] = part.q[n] / part.m[n] * \
+                (f.elec[:, n] + np.cross(part.vel[:, n], f.magn[:, n]))
 
         return rhs
 
@@ -366,7 +376,9 @@ class penningtrap(ptype):
         for n in range(N):
             a = old_parts.q[n] / old_parts.m[n]
 
-            c[:, n] += dt / 2 * a * np.cross(old_parts.vel[:, n], old_fields.magn[:, n] - new_fields.magn[:, n])
+            c[:, n] += dt / 2 * a * \
+                np.cross(
+                    old_parts.vel[:, n], old_fields.magn[:, n] - new_fields.magn[:, n])
 
             # pre-velocity, separated by the electric forces (and the c term)
             vm = old_parts.vel[:, n] + dt / 2 * a * Emean[:, n] + c[:, n] / 2
