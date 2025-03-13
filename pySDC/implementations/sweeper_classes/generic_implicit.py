@@ -67,12 +67,13 @@ class generic_implicit(Sweeper):
 
         # update the MIN-SR-FLEX preconditioner
         self.updateVariableCoeffs(L.status.sweep)
-
         # gather all terms which are known already (e.g. from the previous iteration)
         # this corresponds to u0 + QF(u^k) - QdF(u^k) + tau
-        if P.first_order:
-            for m in range(0, M):
-                L.u[m]=L.prob.u_init()
+        # if P.first_order:
+        #     breakpoint()
+
+        L.u[0]=L.prob.u_init()
+        
         # get QF(u^k)
         integral = self.integrate()
         for m in range(M):
@@ -81,12 +82,11 @@ class generic_implicit(Sweeper):
                 integral[m] -= L.dt * self.QI[m + 1, j] * L.f[j]
 
             # add initial value
-            # breakpoint()
+            
             integral[m] += L.u[0]
             # add tau if associated
             if L.tau[m] is not None:
                 integral[m] += L.tau[m]
-
         # do the sweep
         for m in range(0, M):
             # build rhs, consisting of the known values from above and new values from previous nodes (at k+1)

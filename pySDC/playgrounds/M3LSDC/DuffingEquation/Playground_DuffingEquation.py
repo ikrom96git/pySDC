@@ -14,7 +14,7 @@ from pySDC.implementations.transfer_classes.TransferMesh_NoCoarse import mesh_to
 from pySDC.playgrounds.M3LSDC.plot_residual import plot_residual
 
 
-dt=0.1
+dt=0.01
 EPSILON=.1
 
 def MLSDC_duffing_equation(zeroth_order=False):
