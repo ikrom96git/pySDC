@@ -70,8 +70,9 @@ class generic_implicit(Sweeper):
 
         # gather all terms which are known already (e.g. from the previous iteration)
         # this corresponds to u0 + QF(u^k) - QdF(u^k) + tau
-        for m in range(0, M):
-            L.u[m]=L.prob.u_init()
+        if P.first_order:
+            for m in range(0, M):
+                L.u[m]=L.prob.u_init()
         # get QF(u^k)
         integral = self.integrate()
         for m in range(M):
